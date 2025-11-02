@@ -3,11 +3,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.taskmanager"
+    namespace = "io.github.monitbisht.iterack"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.taskmanager"
+        applicationId = "io.github.monitbisht.iterack"
         minSdk = 30
         targetSdk = 35
         versionCode = 1

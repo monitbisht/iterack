@@ -1,4 +1,4 @@
-package com.example.taskmanager;
+package github.monitbisht.iterack;
 
 import android.os.Bundle;
 
@@ -13,6 +13,8 @@ import com.google.android.material.button.MaterialButton;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import io.github.monitbisht.iterack.R;
 
 
 public class HomeFragment extends Fragment {

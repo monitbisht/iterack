@@ -1,4 +1,4 @@
-package com.example.taskmanager;
+package github.monitbisht.iterack;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -11,6 +11,7 @@ import android.widget.TextView;
 import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import io.github.monitbisht.iterack.R;
 
 public class TaskGroupAdapter extends BaseAdapter {
     Context context;

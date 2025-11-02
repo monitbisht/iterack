@@ -1,4 +1,4 @@
-package com.example.taskmanager;
+package github.monitbisht.iterack;
 
 import android.os.Bundle;
 
@@ -13,6 +13,8 @@ import android.view.ViewGroup;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+
+import io.github.monitbisht.iterack.R;
 
 
 public class PlannerFragment extends Fragment {

@@ -1,4 +1,4 @@
-package com.example.taskmanager;
+package github.monitbisht.iterack;
 
 public class TaskGroup {
     public String name;

@@ -1,4 +1,4 @@
-package com.example.taskmanager;
+package github.monitbisht.iterack;
 
 import android.os.Bundle;
 
@@ -7,6 +7,8 @@ import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import io.github.monitbisht.iterack.R;
 
 
 public class ProfileFragment extends Fragment {

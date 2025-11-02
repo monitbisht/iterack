@@ -1,4 +1,4 @@
-package com.example.taskmanager;
+package github.monitbisht.iterack;
 
 
 import android.content.Intent;
@@ -19,6 +19,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import io.github.monitbisht.iterack.R;
 
 
 public class MainActivity extends AppCompatActivity {

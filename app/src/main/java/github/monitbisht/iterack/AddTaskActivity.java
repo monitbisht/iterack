@@ -1,4 +1,4 @@
-package com.example.taskmanager;
+package github.monitbisht.iterack;
 
 import android.app.DatePickerDialog;
 import android.content.Intent;
@@ -10,7 +10,8 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.taskmanager.databinding.ActivityAddTaskBinding;
+import io.github.monitbisht.iterack.R;
+import io.github.monitbisht.iterack.databinding.ActivityAddTaskBinding;
 import com.google.android.material.button.MaterialButton;
 
 public class AddTaskActivity extends AppCompatActivity {
