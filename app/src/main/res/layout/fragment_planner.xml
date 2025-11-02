@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/planner_scroll"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:background="@color/primary_background"
+    android:overScrollMode="never"
+    tools:context=".PlannerFragment">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="20dp"
+        android:paddingBottom="100dp">
+
+        <!-- Header -->
+        <RelativeLayout
+            android:id="@+id/planner_header"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="40dp"
+            android:padding="10dp">
+
+            <ImageView
+                android:id="@+id/plannerBack_arrow"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:src="@drawable/back_arrow" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:text="Planner"
+                android:textColor="@color/light_gray"
+                android:textSize="25sp"
+                android:textStyle="bold" />
+
+            <ImageView
+                android:id="@+id/plannerNotif_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:src="@drawable/ic_notification" />
+        </RelativeLayout>
+
+        <!-- Calendar Card -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/calendar_section"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            app:cardCornerRadius="15dp"
+            app:cardElevation="12dp"
+            android:background="@color/dark_charcoal">
+
+            <com.applandeo.materialcalendarview.CalendarView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:pagesColor="@color/dark_charcoal"
+                app:headerColor="@color/dark_charcoal"
+                app:abbreviationsBarColor="@color/dark_charcoal"
+                app:abbreviationsLabelsColor="@color/light_gray"
+                app:selectionColor="@color/light_blue"
+                app:daysLabelsColor="@color/off_white"
+                app:anotherMonthsDaysLabelsColor="@color/medium_gray"
+                app:todayLabelColor="@color/light_blue"
+                app:type="one_day_picker"
+                app:swipeEnabled="true" />
+        </androidx.cardview.widget.CardView>
+
+        <!-- Divider Line -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="20dp"
+            android:background="@color/dark_gray" />
+
+        <!-- Tasks Title -->
+        <TextView
+            android:id="@+id/schedule_textview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="15dp"
+            android:text="Tasks"
+            android:textColor="@color/light_gray"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <!-- RecyclerView for Tasks -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/planner_footer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="16dp"
+            android:nestedScrollingEnabled="false"
+            android:overScrollMode="never" />
+
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

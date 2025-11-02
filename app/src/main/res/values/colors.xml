@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="lavender">#967bb6</color>
+    <color name="gray">#808080</color>
+    <color name="light_brown">#E5D3B3</color>
+    <color name="purple">#800080</color>
+    <color name="blue">#3D8DF5</color>
+    <color name="green">#008000</color>
+    <color name="violet">#CBBEDC</color>
+    <color name="azul">#657EF0</color>
+    <color name="teal">#A0D7D7</color>
+    <color name="teal2">#5A7B9B</color>
+    <color name="light_blue">#89B7F9</color>
+
+
+    <color name="primary_background">#1A1A1A</color>
+    <color name="dark_charcoal">#2C2C2C</color>
+    <color name="medium_gray">#999999</color>
+    <color name="light_gray">#E5E5E5</color>
+    <color name="mutated_green">#4CAF50</color>
+    <color name="mutated_blue">#4D7EA8</color>
+    <color name="coral_orange">#FF7043</color>
+    <color name="off_white">#F5F5F5</color>
+    <color name="fresh_green">#2ECC71</color>
+    <color name="sunny_yellow">#F1C40F</color>
+    <color name="poppy_red">#E74C3C</color>
+    <color name="sky_blue">#3498DB</color>
+    <color name="dark_gray">#4F4F4F</color>
+
+    <color name="profile_text_secondary">#B0B0B0</color>
+    <color name="profile_text_footer">#777777</color>
+    <color name="warning_red">#E53935</color>
+    <color name="profile_button_logout_bg">#402C2C</color>
+    <color name="profile_divider">#424242</color>
+    
+    <color name="transparent_coral_orange">#80FF7043</color>
+    <color name="transparent_green">#802ECC71</color>
+    <color name="transparet_blue">#803D8DF5</color>
+    <color name="transparent_gray">#80B0B0B0</color>
+
+
+</resources>

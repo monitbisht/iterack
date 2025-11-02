@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/constraint"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardView"
+        android:layout_width="150dp"
+        android:layout_height="140dp"
+        android:backgroundTint="@color/dark_charcoal"
+        app:cardCornerRadius="20dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:clickable="false"
+        android:focusable="false"
+        >
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/task_group_icon"
+                android:layout_width="25dp"
+                android:layout_height="25dp"
+                android:layout_centerHorizontal="true"
+                android:layout_marginLeft="10dp"
+                android:layout_marginTop="10dp"
+                android:src="@drawable/ic_personal"
+                app:civ_border_color="#FF000000"
+                app:civ_border_width="0dp">
+
+            </de.hdodenhof.circleimageview.CircleImageView>
+
+
+            <TextView
+                android:id="@+id/taskGroup_heading"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/task_group_icon"
+                android:text="Personal"
+                android:textSize="20sp"
+                android:layout_centerHorizontal="true"
+                android:textColor="@color/light_gray"></TextView>
+
+            <TextView
+                android:id="@+id/progress_heading"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/taskGroup_heading"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="16dp"
+                android:text="Progress"
+                android:textColor="@color/medium_gray"
+                android:textSize="12sp">
+
+            </TextView>
+
+
+            <ProgressBar
+                android:id="@+id/progressBar"
+                style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/progress_heading"
+                android:max="100"
+                android:progress="50"
+                android:paddingHorizontal="16dp"
+                android:scaleY="1.5"
+                android:progressTint="@color/mutated_green"
+                android:layout_centerHorizontal="true"
+                >
+
+            </ProgressBar>
+
+            <TextView
+                android:id="@+id/taskRatio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/progressBar"
+                android:layout_marginEnd="8dp"
+                android:layout_marginTop="2dp"
+                android:layout_alignParentEnd="true"
+                android:text="50%"
+                android:textColor="@color/medium_gray"
+                android:textSize="10dp"
+                android:textStyle="bold"
+
+                >
+
+            </TextView>
+
+
+        </RelativeLayout>
+
+    </androidx.cardview.widget.CardView>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
