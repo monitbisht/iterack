@@ -1,6 +1,7 @@
 package github.monitbisht.iterack;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -52,13 +53,18 @@ public class TaskGroupAdapter extends BaseAdapter {
         TaskGroup group = taskGroupList.get(position);
 
         heading.setText(group.name);
-        int percentage =  (int) ((group.completedTasks * 100.0f) / group.totalTasks);
-        taskRatio.setText(percentage + "%");
+        taskRatio.setText(String.format("%d / %d", group.completedTasks, group.totalTasks));
 
         int progress = (int) ((group.completedTasks * 100.0f) / group.totalTasks);
         progressBar.setProgress(progress);
 
         groupIcon.setImageResource(group.profileIcon);
+
+        Drawable bg = taskRatio.getBackground().mutate();
+        bg.setTint(context.getResources().getColor(R.color.dark_gray));
+
+        taskRatio.setTextColor(context.getResources().getColor(R.color.light_gray));
+
 
 
         return view;

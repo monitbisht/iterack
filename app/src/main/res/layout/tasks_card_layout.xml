@@ -72,7 +72,21 @@
             android:textSize="12sp"
             app:layout_constraintTop_toBottomOf="@id/task_description"
             app:layout_constraintStart_toStartOf="@id/task_description"
-            tools:text="Due Tomorrow • Work" />
+            tools:text="Due Tomorrow " />
+
+
+        <TextView
+            android:id="@+id/task_group"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:layout_marginStart="4dp"
+            android:textColor="@color/medium_gray"
+            android:textSize="12sp"
+            app:layout_constraintStart_toEndOf="@id/task_due_date"
+            app:layout_constraintTop_toBottomOf="@id/task_description"
+            tools:text="Work" />
+
 
         <TextView
             android:id="@+id/task_status"

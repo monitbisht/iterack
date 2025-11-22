@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/primary_background"
+    android:orientation="vertical"
+    android:padding="20dp"
+    >
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:text="Edit Task"
+        android:textColor="@color/light_gray"
+        android:textSize="20sp"
+        android:textStyle="bold" />
+
+    <EditText
+        android:id="@+id/editTaskName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:backgroundTint="@color/light_gray"
+        android:hint="Task title"
+        android:textColor="@color/off_white"
+        android:textColorHint="@color/medium_gray" />
+
+    <EditText
+        android:id="@+id/editTaskDescription"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:backgroundTint="@color/light_gray"
+        android:hint="Description"
+        android:textColor="@color/off_white"
+        android:textColorHint="@color/medium_gray" />
+
+    <!-- Project Group Buttons -->
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="14dp"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:id="@+id/editGroupLayout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/editWorkBtn"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@color/button_selector"
+                android:text="Work"
+                android:textColor="@color/black"
+                app:cornerRadius="18dp"
+                app:icon="@drawable/ic_work"
+                app:iconGravity="textStart"
+                app:iconPadding="6dp"
+                app:iconTint="@color/black"
+                android:checkable="true"
+                app:rippleColor="@android:color/transparent"
+                app:strokeWidth="0dp"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/editPersonalBtn"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:backgroundTint="@color/button_selector"
+                android:text="Personal"
+                android:textColor="@color/black"
+                app:cornerRadius="18dp"
+                app:icon="@drawable/ic_personal"
+                app:iconGravity="textStart"
+                app:iconPadding="6dp"
+                app:iconTint="@color/black"
+                android:checkable="true"
+                app:rippleColor="@android:color/transparent"
+                app:strokeWidth="0dp"
+                />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/editHealthBtn"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:backgroundTint="@color/button_selector"
+                android:text="Health"
+                android:textColor="@color/black"
+                app:cornerRadius="18dp"
+                app:icon="@drawable/ic_health"
+                app:iconGravity="textStart"
+                app:iconPadding="6dp"
+                app:iconTint="@color/black"
+                android:checkable="true"
+                app:rippleColor="@android:color/transparent"
+                app:strokeWidth="0dp"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/editStudyBtn"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:backgroundTint="@color/button_selector"
+                android:text="Study"
+                android:textColor="@color/black"
+                app:cornerRadius="18dp"
+                app:icon="@drawable/ic_study"
+                app:iconGravity="textStart"
+                app:iconPadding="6dp"
+                app:iconTint="@color/black"
+                android:checkable="true"
+                app:rippleColor="@android:color/transparent"
+                app:strokeWidth="0dp"/>
+
+        </LinearLayout>
+
+    </HorizontalScrollView>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="40dp"
+        android:paddingEnd="40dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/editStartDateBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_marginTop="10dp"
+            android:backgroundTint="@color/light_gray"
+            android:text="Start Date"
+            android:textColor="@color/black"
+            app:cornerRadius="18dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/editEndDateBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_marginTop="10dp"
+            android:backgroundTint="@color/light_gray"
+            android:text="End Date"
+            android:textColor="@color/black"
+            app:cornerRadius="18dp"
+            />
+
+    </RelativeLayout>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/saveEditedTaskBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_gravity="center"
+        android:paddingTop="12dp"
+        android:paddingBottom="12dp"
+        android:paddingStart="32dp"
+        android:paddingEnd="32dp"
+        android:backgroundTint="@color/dark_emerald"
+        android:text="Save Changes"
+        android:textColor="@color/fresh_green"
+        app:cornerRadius="24dp"
+        android:textSize="16sp"
+        />
+
+</LinearLayout>

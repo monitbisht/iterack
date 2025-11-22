@@ -137,7 +137,7 @@
                 android:layout_margin="10dp">
 
                 <com.mikhaellopez.circularprogressbar.CircularProgressBar
-                    android:id="@+id/circularProgressBar"
+                    android:id="@+id/circular_progress_bar"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="10dp"

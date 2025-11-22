@@ -37,8 +37,13 @@
     
     <color name="transparent_coral_orange">#80FF7043</color>
     <color name="transparent_green">#802ECC71</color>
-    <color name="transparet_blue">#803D8DF5</color>
+    <color name="transparent_blue">#803D8DF5</color>
     <color name="transparent_gray">#80B0B0B0</color>
+
+    <color name="dark_emerald">#0E3B21</color>
+    <color name="vibrant_mint">#00E676</color>
+    <color name="dark_moss_green">#2C402C</color>
+
 
 
 </resources>
