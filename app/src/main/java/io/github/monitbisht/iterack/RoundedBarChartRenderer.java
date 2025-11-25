@@ -1,4 +1,4 @@
-package github.monitbisht.iterack;
+package io.github.monitbisht.iterack;
 
 import android.graphics.Canvas;
 import android.graphics.Path;

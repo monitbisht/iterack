@@ -1,5 +1,7 @@
-package github.monitbisht.iterack;
+package io.github.monitbisht.iterack;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -18,18 +20,21 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.mikhaellopez.circularprogressbar.CircularProgressBar;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 
-import io.github.monitbisht.iterack.R;
+import de.hdodenhof.circleimageview.CircleImageView;
 
 
 public class HomeFragment extends Fragment {
@@ -40,7 +45,9 @@ public class HomeFragment extends Fragment {
 
     CircularProgressBar circularProgressBar;
 
-    TextView progressBarText;
+    TextView progressBarText , userName ;
+    CircleImageView profileImage;
+
 
     private int totalTodaysTasks = 0;
     private int completedTodayTasks = 0;
@@ -62,6 +69,12 @@ public class HomeFragment extends Fragment {
         gridView = view.findViewById(R.id.taskGroups_gridview);
         circularProgressBar = view.findViewById(R.id.circular_progress_bar);
         progressBarText = view.findViewById(R.id.progressPercentage);
+        userName = view.findViewById(R.id.username_textview);
+        profileImage = view.findViewById(R.id.profile_image);
+
+
+        userName.setText(""); // Clear before loading
+        profileImage.setImageDrawable(null); // Clear previous image
 
         return view;
     }
@@ -76,9 +89,76 @@ public class HomeFragment extends Fragment {
             }
         });
 
+        loadUserData();
         loadTaskGroups();
         loadTaskProgress();
     }
+
+    private void loadUserData() {
+
+        SharedPreferences prefs = requireContext().getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
+        String cachedUid = prefs.getString("uid", null);
+
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) return;
+
+        String uid = user.getUid();
+
+        // 1. If UID changed -> clear old user cache
+        if (cachedUid != null && !cachedUid.equals(uid)) {
+            prefs.edit().clear().apply();
+        }
+
+        // Load cached data
+        String cachedName = prefs.getString("name", null);
+        String cachedPhoto = prefs.getString("photoUrl", null);
+
+        if (cachedName != null) {
+            userName.setText(cachedName);
+        }
+
+        if (cachedPhoto != null) {
+            Glide.with(requireContext())
+                    .load(cachedPhoto)
+                    .placeholder(R.drawable.profile)
+                    .error(R.drawable.profile)
+                    .into(profileImage);
+        }
+
+        // 2. Fetch the fresh data from Firestore
+        FirebaseFirestore.getInstance()
+                .collection("users")
+                .document(uid)
+                .get()
+                .addOnSuccessListener(doc -> {
+                    if (doc.exists()) {
+
+                        String name = doc.getString("name");
+                        String photoUrl = doc.getString("photoUrl");
+
+                        // Update UI
+                        if (name != null) userName.setText(name);
+                        if (photoUrl != null) {
+                            Glide.with(requireContext())
+                                    .load(photoUrl)
+                                    .placeholder(R.drawable.profile)
+                                    .error(R.drawable.profile)
+                                    .into(profileImage);
+                        }
+
+                        // 3. Save new data + UID in cache
+                        prefs.edit()
+                                .putString("uid", uid)
+                                .putString("name", name)
+                                .putString("photoUrl", photoUrl)
+                                .apply();
+                    }
+                })
+                .addOnFailureListener(e ->
+                        Log.e("HomeFragment", "Failed to fetch user data: " + e.getMessage())
+                );
+    }
+
 
     private void showTodayTasksDialog() {
         BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(requireContext());
@@ -97,7 +177,7 @@ public class HomeFragment extends Fragment {
 
         Date today = new Date();
 
-        FireStoreHelper.getAllTasks(new FireStoreHelper.FirestoreCallback<ArrayList<Tasks>>() {
+        FireStoreHelper.getInstance().getAllTasks(new FireStoreHelper.FirestoreCallback<ArrayList<Tasks>>() {
             @Override
             public void onSuccess(ArrayList<Tasks> result) {
                 LinearLayout tasksContainer = dialogView.findViewById(R.id.bottomSheetTaskContainer);
@@ -218,7 +298,7 @@ public class HomeFragment extends Fragment {
                 loadTaskProgress();
             }
 
-            FireStoreHelper.updateTask(task, new FireStoreHelper.FirestoreCallback<Void>() {
+            FireStoreHelper.getInstance().updateTask(task, new FireStoreHelper.FirestoreCallback<Void>() {
                 @Override
                 public void onSuccess(Void r) {
                     Log.d("TaskUpdate", "Updated successfully");
@@ -257,7 +337,7 @@ public class HomeFragment extends Fragment {
 
     private void loadTaskGroups() {
 
-        FireStoreHelper.getAllTasks(new FireStoreHelper.FirestoreCallback<ArrayList<Tasks>>() {
+        FireStoreHelper.getInstance().getAllTasks(new FireStoreHelper.FirestoreCallback<ArrayList<Tasks>>() {
 
             @Override
             public void onSuccess(ArrayList<Tasks> result) {
@@ -325,7 +405,7 @@ public class HomeFragment extends Fragment {
     private void loadTaskProgress(){
 
 
-        FireStoreHelper.getAllTasks(new FireStoreHelper.FirestoreCallback<ArrayList<Tasks>>() {
+        FireStoreHelper.getInstance().getAllTasks(new FireStoreHelper.FirestoreCallback<ArrayList<Tasks>>() {
 
             @Override
             public void onSuccess(ArrayList<Tasks> result) {

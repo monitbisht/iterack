@@ -45,5 +45,9 @@
     <color name="dark_moss_green">#2C402C</color>
 
 
+    <color name="dark_background">#121212</color>
+    <color name="dark_surface">#1F1F1F</color>
+    <color name="accent_purple">#BB86FC</color>
+
 
 </resources>

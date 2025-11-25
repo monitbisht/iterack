@@ -1,4 +1,4 @@
-package github.monitbisht.iterack;
+package io.github.monitbisht.iterack;
 
 
 import android.content.Intent;
@@ -18,8 +18,6 @@ import androidx.fragment.app.FragmentTransaction;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-
-import io.github.monitbisht.iterack.R;
 
 
 public class MainActivity extends AppCompatActivity {

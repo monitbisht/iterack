@@ -40,28 +40,34 @@
                     app:layout_constraintTop_toTopOf="parent" />
 
                 <TextView
-                    android:id="@+id/profileName"
+                    android:id="@+id/profile_name"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"
                     android:text="Username"
                     android:textColor="@color/white"
-                    android:textSize="18sp"
+                    android:textSize="24sp"
                     android:textStyle="bold"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="4dp"
                     app:layout_constraintEnd_toStartOf="@id/editProfileIcon"
                     app:layout_constraintStart_toEndOf="@id/profileImage"
                     app:layout_constraintTop_toTopOf="@id/profileImage" />
 
                 <TextView
-                    android:id="@+id/profileEmail"
+                    android:id="@+id/profile_email"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:text="User Email"
                     android:textColor="@color/profile_text_secondary"
                     android:textSize="14sp"
-                    app:layout_constraintEnd_toEndOf="@id/profileName"
-                    app:layout_constraintStart_toStartOf="@id/profileName"
-                    app:layout_constraintTop_toBottomOf="@id/profileName" />
+                    android:paddingTop="2dp"
+                    android:paddingStart="2dp"
+                    android:paddingEnd="2dp"
+                    android:paddingBottom="6dp"
+                    app:layout_constraintEnd_toEndOf="@id/profile_name"
+                    app:layout_constraintStart_toStartOf="@id/profile_name"
+                    app:layout_constraintTop_toBottomOf="@id/profile_name" />
 
                 <ImageView
                     android:id="@+id/editProfileIcon"
@@ -69,14 +75,14 @@
                     android:layout_height="24dp"
                     android:src="@drawable/ic_edit"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="@id/profileName"
+                    app:layout_constraintTop_toTopOf="@id/profile_name"
                     app:tint="@color/mutated_blue" />
 
                 <View
                     android:id="@+id/divider1"
                     android:layout_width="0dp"
                     android:layout_height="1dp"
-                    android:layout_marginTop="16dp"
+                    android:layout_marginTop="4dp"
                     android:background="@color/profile_divider"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
@@ -120,7 +126,7 @@
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:layout_marginTop="24dp"
-                    android:src="@drawable/ic_lock"
+                    android:src="@drawable/ic_fingerprint"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/passwordIcon"
                     app:tint="@color/profile_text_secondary" />
@@ -446,7 +452,7 @@
         </com.google.android.material.card.MaterialCardView>
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/logoutButton"
+            android:id="@+id/logout_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"

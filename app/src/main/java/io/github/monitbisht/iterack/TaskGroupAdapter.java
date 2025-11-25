@@ -1,4 +1,4 @@
-package github.monitbisht.iterack;
+package io.github.monitbisht.iterack;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
@@ -12,7 +12,6 @@ import android.widget.TextView;
 import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
-import io.github.monitbisht.iterack.R;
 
 public class TaskGroupAdapter extends BaseAdapter {
     Context context;

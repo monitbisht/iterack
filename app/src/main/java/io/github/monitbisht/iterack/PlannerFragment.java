@@ -1,4 +1,4 @@
-package github.monitbisht.iterack;
+package io.github.monitbisht.iterack;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -21,8 +21,6 @@ import com.google.android.material.chip.Chip;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-
-import io.github.monitbisht.iterack.R;
 
 public class PlannerFragment extends Fragment {
 
@@ -121,7 +119,7 @@ public class PlannerFragment extends Fragment {
 
     private void loadTasks() {
 
-        FireStoreHelper.getAllTasks(new FireStoreHelper.FirestoreCallback<ArrayList<Tasks>>() {
+        FireStoreHelper.getInstance().getAllTasks(new FireStoreHelper.FirestoreCallback<ArrayList<Tasks>>() {
             @Override
             public void onSuccess(ArrayList<Tasks> taskList) {
 

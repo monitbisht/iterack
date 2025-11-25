@@ -1,4 +1,4 @@
-package github.monitbisht.iterack;
+package io.github.monitbisht.iterack;
 
 import android.graphics.Color;
 import android.os.Bundle;
@@ -23,13 +23,12 @@ import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.github.monitbisht.iterack.R;
-
 
 public class InsightFragment extends Fragment {
 
 
     private BarChart barChart ;
+    private AutoCompleteTextView trendDropdown;
 
 
     public InsightFragment() {
@@ -50,7 +49,13 @@ public class InsightFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         barChart = view.findViewById(R.id.barChart);
+        trendDropdown = view.findViewById(R.id.trendDropdown);
 
+       chartSetup();
+
+    }
+
+    private void chartSetup() {
         List<BarEntry> entries = new ArrayList<>();
         entries.add(new BarEntry(0, 18));
         entries.add(new BarEntry(1, 34));
@@ -105,7 +110,7 @@ public class InsightFragment extends Fragment {
 
         barChart.invalidate();
 
-        AutoCompleteTextView trendDropdown = view.findViewById(R.id.trendDropdown);
+
         String[] options = {"Weekly", "Monthly"};
 
         ArrayAdapter<String> adapter = new ArrayAdapter<>(
@@ -117,7 +122,6 @@ public class InsightFragment extends Fragment {
 
         trendDropdown.setAdapter(adapter);
         trendDropdown.setText(options[0], false); // Default selection
-
 
     }
 }

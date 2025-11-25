@@ -12,7 +12,20 @@
           "package_name": "io.github.monitbisht.iterack"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "406605301367-18ld4foesekhp7dtrlmoucoh40eeqdmj.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "io.github.monitbisht.iterack",
+            "certificate_hash": "6e2861a742e9cfd0e32d455dd1532cc46f76230a"
+          }
+        },
+        {
+          "client_id": "406605301367-t2duj3q66rell2j4s0tl6fepihc9o464.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBQPHanWfH66yc2G9eyr34vxmXWowtjf1Y"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "406605301367-t2duj3q66rell2j4s0tl6fepihc9o464.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

@@ -1,4 +1,4 @@
-package github.monitbisht.iterack;
+package io.github.monitbisht.iterack;
 
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
@@ -29,8 +29,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
-
-import io.github.monitbisht.iterack.R;
 
 public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TaskViewHolder> {
 
@@ -90,7 +88,7 @@ public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TaskViewHold
             task.setCompleted(isChecked);
             task.updateStatus(new Date());
 
-            FireStoreHelper.updateTask(task, new FireStoreHelper.FirestoreCallback<Void>() {
+            FireStoreHelper.getInstance().updateTask(task, new FireStoreHelper.FirestoreCallback<Void>() {
                 @Override
                 public void onSuccess(Void r) {
                 }
@@ -278,7 +276,7 @@ public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TaskViewHold
                     .setPositiveButton("Delete", (dialog, which) -> {
 
 
-                        FireStoreHelper.deleteTask(t.getTaskId(), new FireStoreHelper.FirestoreCallback<Void>() {
+                        FireStoreHelper.getInstance().deleteTask(t.getTaskId(), new FireStoreHelper.FirestoreCallback<Void>() {
                             @Override
                             public void onSuccess(Void r) {
                                 tasksList.remove(position);
@@ -363,7 +361,7 @@ public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TaskViewHold
                 } catch (Exception ignored) {
                 }
 
-                FireStoreHelper.updateTask(task, new FireStoreHelper.FirestoreCallback<Void>() {
+                FireStoreHelper.getInstance().updateTask(task, new FireStoreHelper.FirestoreCallback<Void>() {
                     @Override
                     public void onSuccess(Void r) {
                         notifyItemChanged(position);

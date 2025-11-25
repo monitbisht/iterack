@@ -1,17 +1,15 @@
-package github.monitbisht.iterack;
+package io.github.monitbisht.iterack;
 
 import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import io.github.monitbisht.iterack.R;
 import io.github.monitbisht.iterack.databinding.ActivityAddTaskBinding;
 import com.google.android.material.button.MaterialButton;
 
@@ -207,7 +205,7 @@ public class AddTaskActivity extends AppCompatActivity {
             // If everything is valid → upload
             Tasks task = new Tasks(taskTitle, description, group, startDate, endDate);
 
-            FireStoreHelper.addTask(task, new FireStoreHelper.FirestoreCallback<Void>() {
+            FireStoreHelper.getInstance().addTask(task, new FireStoreHelper.FirestoreCallback<Void>() {
                 @Override
                 public void onSuccess(Void result) {
                     Toast.makeText(AddTaskActivity.this, "Task added", Toast.LENGTH_SHORT).show();
@@ -219,6 +217,7 @@ public class AddTaskActivity extends AppCompatActivity {
                     Toast.makeText(AddTaskActivity.this, "Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             });
+
         });
 
 

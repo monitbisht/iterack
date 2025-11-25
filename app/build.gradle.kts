@@ -50,6 +50,10 @@ dependencies {
     implementation(libs.lifecycle.viewmodel.ktx)
     implementation(libs.navigation.fragment)
     implementation(libs.navigation.ui)
+    implementation(libs.firebase.auth)
+    implementation(libs.credentials)
+    implementation(libs.credentials.play.services.auth)
+    implementation(libs.googleid)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
@@ -57,17 +61,30 @@ dependencies {
     implementation(libs.circleimageview)
     implementation(libs.materialcalendarview)
     implementation(libs.mpandroidchart)
+    implementation("com.github.bumptech.glide:glide:5.0.5")
+
+    implementation("com.google.android.material:material:1.12.0")
 
     // Import the Firebase BoM
-    implementation(platform("com.google.firebase:firebase-bom:34.5.0"))
+    implementation(platform("com.google.firebase:firebase-bom:34.6.0"))
 
 
     // When using the BoM, don't specify versions in Firebase dependencies
+
+    //For Firebase Analytics
     implementation("com.google.firebase:firebase-analytics")
 
     // For Cloud Firestore (Database)
     implementation("com.google.firebase:firebase-firestore")
 
+    // For Firebase Authentication
+    implementation("com.google.firebase:firebase-auth")
 
+    //The dependencies for the Credential Manager libraries with their versions
+    implementation("androidx.credentials:credentials:1.3.0")
+    implementation("androidx.credentials:credentials-play-services-auth:1.3.0")
+    implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
 
 }
+
+
