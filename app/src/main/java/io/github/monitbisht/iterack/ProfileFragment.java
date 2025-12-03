@@ -3,7 +3,9 @@ package io.github.monitbisht.iterack;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+
 import android.os.Bundle;
+
 
 import androidx.fragment.app.Fragment;
 
@@ -11,10 +13,12 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.google.android.material.button.MaterialButton;
+
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -28,6 +32,13 @@ public class ProfileFragment extends Fragment {
     private TextView profileName, profileEmail;
     private CircleImageView profileImage;
     private MaterialButton logoutButton;
+
+    private ImageView editProfileIcon;
+
+    private String currentUserPhotoUrl;
+    private String currentUserName;
+    private String currentUserEmail;
+
 
 
     public ProfileFragment() {
@@ -44,7 +55,7 @@ public class ProfileFragment extends Fragment {
         profileEmail = view.findViewById(R.id.profile_email);
         profileImage = view.findViewById(R.id.profileImage);
         logoutButton = view.findViewById(R.id.logout_button);
-
+        editProfileIcon = view.findViewById(R.id.profile_edit_button);
 
         return view;
 
@@ -53,9 +64,15 @@ public class ProfileFragment extends Fragment {
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        editProfileIcon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+              //Todo
+            }
+        });
+
 
         loadUserData();
-
         signOut();
 
 
@@ -108,16 +125,24 @@ public class ProfileFragment extends Fragment {
 
 
         if (cachedName != null) {
+            currentUserName = cachedName;     // ← ADD THIS
             profileName.setText(cachedName);
         }
 
+        if (cachedEmail != null) {
+            currentUserEmail = cachedEmail;   // ← ADD THIS
+            profileEmail.setText(cachedEmail);
+        }
+
         if (cachedPhoto != null) {
+            currentUserPhotoUrl = cachedPhoto;   // ← ADD THIS
             Glide.with(requireContext())
                     .load(cachedPhoto)
                     .placeholder(R.drawable.profile)
                     .error(R.drawable.profile)
                     .into(profileImage);
         }
+
 
         // 2. Fetch the fresh data from Firestore
         FirebaseFirestore.getInstance()
@@ -130,24 +155,33 @@ public class ProfileFragment extends Fragment {
                         String name = doc.getString("name");
                         String photoUrl = doc.getString("photoUrl");
                         String email = doc.getString("email");
-
+                        String updatedPic = doc.getString("updatedPic");
+                        String activePic = doc.getString("activePic");
 
                         // Update UI
-                        if (name != null) profileName.setText(name);
+                        if (name != null) {
+                            currentUserName = name;
+                            profileName.setText(name);
+                        }
+
+                        if (email != null) {
+                            currentUserEmail = email;
+                            profileEmail.setText(email);
+                        }
+
                         if (photoUrl != null) {
                             Glide.with(requireContext())
                                     .load(photoUrl)
                                     .placeholder(R.drawable.profile)
-                                    .error(R.drawable.profile)
                                     .into(profileImage);
                         }
-                        if (email != null) profileEmail.setText(email);
 
                         // 3. Save new data + UID in cache
                         prefs.edit()
                                 .putString("uid", uid)
                                 .putString("name", name)
                                 .putString("photoUrl", photoUrl)
+                                .putString("email", email)
                                 .apply();
                     }
                 })

@@ -24,6 +24,7 @@ import com.bumptech.glide.Glide;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
+import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -32,7 +33,9 @@ import com.mikhaellopez.circularprogressbar.CircularProgressBar;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -260,6 +263,7 @@ public class HomeFragment extends Fragment {
                 // Completed
                 task.setStatus("Completed");
                 status.setText("Completed");
+                task.setCompletionDate(new Date());
                 tintStatusPill(status, "Completed");
 
                 title.setPaintFlags(title.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
@@ -271,7 +275,9 @@ public class HomeFragment extends Fragment {
                 loadTaskProgress();
             } else {
                 // Recalculate proper status from dates
+                task.setCompleted(false);
                 task.updateStatus(new Date());
+                task.setCompletionDate(null);
 
                 String newStatus = task.getStatus();
                 status.setText(newStatus);

@@ -73,6 +73,7 @@ public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TaskViewHold
         // Handle checkbox click
         holder.taskCheckbox.setOnCheckedChangeListener((buttonView, isChecked) -> {
 
+
             if (task.getStatus().equals("Missed") && isChecked) {
                 Toast.makeText(context, "Missed tasks can’t be marked completed.", Toast.LENGTH_SHORT).show();
                 holder.taskCheckbox.setChecked(false);
@@ -84,9 +85,16 @@ public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TaskViewHold
                 Toast.makeText(context, "Task past end date so can’t update.", Toast.LENGTH_SHORT).show();
                 return;
             }
+            if (isChecked) {
+                task.setCompleted(true);
+                task.setCompletionDate(new Date());
+            } else {
+                task.setCompleted(false);
+                task.setCompletionDate(null);
+            }
 
-            task.setCompleted(isChecked);
             task.updateStatus(new Date());
+
 
             FireStoreHelper.getInstance().updateTask(task, new FireStoreHelper.FirestoreCallback<Void>() {
                 @Override

@@ -214,7 +214,7 @@ public class AddTaskActivity extends AppCompatActivity {
 
                 @Override
                 public void onError(Exception e) {
-                    Toast.makeText(AddTaskActivity.this, "Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText( AddTaskActivity.this, "Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             });
 

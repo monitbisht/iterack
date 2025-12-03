@@ -50,7 +50,7 @@
                     android:textStyle="bold"
                     android:paddingTop="8dp"
                     android:paddingBottom="4dp"
-                    app:layout_constraintEnd_toStartOf="@id/editProfileIcon"
+                    app:layout_constraintEnd_toStartOf="@id/profile_edit_button"
                     app:layout_constraintStart_toEndOf="@id/profileImage"
                     app:layout_constraintTop_toTopOf="@id/profileImage" />
 
@@ -70,13 +70,15 @@
                     app:layout_constraintTop_toBottomOf="@id/profile_name" />
 
                 <ImageView
-                    android:id="@+id/editProfileIcon"
+                    android:id="@+id/profile_edit_button"
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:src="@drawable/ic_edit"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="@id/profile_name"
-                    app:tint="@color/mutated_blue" />
+                    app:tint="@color/mutated_blue"
+                    android:clickable="true"
+                    />
 
                 <View
                     android:id="@+id/divider1"
@@ -202,37 +204,26 @@
                     app:trackTint="@color/switch_track_tint"
                     />
 
-                <TextView
-                    android:id="@+id/dailySummaryText"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="24dp"
-                    android:text="Daily Summary"
-                    android:textColor="@color/white"
-                    android:textSize="16sp"
+                <View
+                    android:id="@+id/divider1"
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_marginTop="16dp"
+                    android:background="@color/profile_divider"
+                    app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/taskRemindersText" />
-
-                <com.google.android.material.switchmaterial.SwitchMaterial
-                    android:id="@+id/dailySummarySwitch"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    app:layout_constraintBottom_toBottomOf="@id/dailySummaryText"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="@id/dailySummaryText"
-                    app:thumbTint="@color/switch_thumb_tint"
-                    app:trackTint="@color/switch_track_tint"/>
 
                 <TextView
                     android:id="@+id/soundText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="24dp"
+                    android:layout_marginTop="16dp"
                     android:text="Sound and Vibration"
                     android:textColor="@color/white"
                     android:textSize="16sp"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/dailySummaryText" />
+                    app:layout_constraintTop_toBottomOf="@id/divider1" />
 
                 <com.google.android.material.switchmaterial.SwitchMaterial
                     android:id="@+id/soundSwitch"
@@ -270,10 +261,7 @@
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingStart="16dp"
-                android:paddingTop="16dp"
-                android:paddingEnd="16dp"
-                android:paddingBottom="16dp">
+                android:padding="16dp">
 
                 <TextView
                     android:id="@+id/exportText"

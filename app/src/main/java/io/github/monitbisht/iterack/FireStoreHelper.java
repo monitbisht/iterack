@@ -4,8 +4,10 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 public class FireStoreHelper {
 
@@ -115,4 +117,34 @@ public class FireStoreHelper {
                 .addOnSuccessListener(unused -> cb.onSuccess(null))
                 .addOnFailureListener(cb::onError);
     }
+
+    public void saveWeeklyStats(String uid, Map<String, Object> data, FirestoreCallback<Boolean> callback) {
+        FirebaseFirestore.getInstance()
+                .collection("users")
+                .document(uid)
+                .collection("stats")
+                .document("weeklyStats")
+                .set(data, SetOptions.merge())
+                .addOnSuccessListener(aVoid -> callback.onSuccess(true))
+                .addOnFailureListener(callback::onError);
+    }
+    public void getWeeklyStats(String uid, FirestoreCallback<Map<String, Object>> callback) {
+        FirebaseFirestore.getInstance()
+                .collection("users")
+                .document(uid)
+                .collection("stats")
+                .document("weeklyStats")
+                .get()
+                .addOnSuccessListener(doc -> {
+                    if (doc.exists()) {
+                        callback.onSuccess(doc.getData());
+                    } else {
+                        callback.onSuccess(null);
+                    }
+                })
+                .addOnFailureListener(callback::onError);
+    }
+
+
+
 }

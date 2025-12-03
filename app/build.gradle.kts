@@ -80,6 +80,15 @@ dependencies {
     // For Firebase Authentication
     implementation("com.google.firebase:firebase-auth")
 
+    // For Firebase AI Logic(Gemini)
+    implementation("com.google.firebase:firebase-ai")
+
+    // Required for one-shot operations (to use `ListenableFuture` from Guava Android)
+    implementation("com.google.guava:guava:31.0.1-android")
+
+    // Required for streaming operations (to use `Publisher` from Reactive Streams)
+    implementation("org.reactivestreams:reactive-streams:1.0.4")
+
     //The dependencies for the Credential Manager libraries with their versions
     implementation("androidx.credentials:credentials:1.3.0")
     implementation("androidx.credentials:credentials-play-services-auth:1.3.0")

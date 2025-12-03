@@ -18,6 +18,8 @@ public class Tasks {
 
     private Date createdOn;
 
+    private Date completionDate;
+
 
 
     // Required empty constructor for Firestore
@@ -38,6 +40,10 @@ public class Tasks {
         this.createdOn = new Date();
     }
 
+
+
+
+
     // GETTERS
     public String getTaskId() { return taskId; }
     public String getTaskTitle() { return taskTitle; }
@@ -48,6 +54,7 @@ public class Tasks {
     public Date getStartDate() { return startDate; }
     public Date getEndDate() { return endDate; }
     public Date getCreatedOn() { return createdOn; }
+    public Date getCompletionDate() { return completionDate; }
 
 
     // SETTERS (needed for Firestore)
@@ -59,6 +66,8 @@ public class Tasks {
     public void setStatus(String status) { this.status = status; }
     public void setStartDate(Date startDate) { this.startDate = startDate; }
     public void setEndDate(Date endDate) { this.endDate = endDate; }
+
+    public void setCompletionDate(Date completionDate) { this.completionDate = completionDate; }
 
     // STATUS CALCULATION
     public void updateStatus(Date today) {
