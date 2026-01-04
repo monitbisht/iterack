@@ -49,5 +49,30 @@
     <color name="dark_surface">#1F1F1F</color>
     <color name="accent_purple">#BB86FC</color>
 
+    <!-- Theme 2 - Charcoal Grey -->
+    <color name="bg_primary_dark">#111315</color>
+    <color name="bg_vignette_start">#0F1215</color>
+    <color name="bg_vignette_end">#0D0F11</color>
+    <color name="bg_overlay_start">#16181A</color>
+    <color name="bg_overlay_end">#0E1113</color>
+
+    <color name="field_fill">#121214</color>
+    <color name="soft_stroke_frosted">#2A2D31</color>
+    <color name="soft_grey">#9AA0A6</color>
+    <color name="bright_white">#F7F7F8</color>
+
+    <color name="gradient_purple">#B46AF3</color>
+    <color name="gradient_cyan">#2CE3FF</color>
+
+    <color name="purple_accent">#B48AF2</color>
+    <color name="cyan_accent">#35D5E6</color>
+
+
+    <color name="soft_coral">#FF8A80</color>
+    <color name="pastel_blue">#90CAF9</color>
+    <color name="warm_amber">#FFE082</color>
+    <color name="periwinkle">#8C9EFF</color>
+
+    <color name="splash_screen_bg">#070d1b</color>
 
 </resources>

@@ -27,6 +27,7 @@ import com.google.android.material.card.MaterialCardView;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserInfo;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.mikhaellopez.circularprogressbar.CircularProgressBar;
 
@@ -85,11 +86,36 @@ public class HomeFragment extends Fragment {
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+
+
+        //Profile Pic for Email Login Users
+        if (isGoogleUser() == false){
+            profileImage.setImageResource(R.drawable.profile_pic);
+        }
+
         viewTaskButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 showTodayTasksDialog();
             }
+        });
+
+       userName.setOnClickListener(v -> {
+            // 1. Prepare "Fake" Data (Pretend it is Morning)
+            androidx.work.Data testData = new androidx.work.Data.Builder()
+                    .putString("TYPE", "MORNING") //
+                    .build();
+
+            // 2. Build the Request (Run Immediately)
+            androidx.work.OneTimeWorkRequest testRequest =
+                    new androidx.work.OneTimeWorkRequest.Builder(TaskReminderWorker.class)
+                            .setInputData(testData)
+                            .build();
+
+            // 3. Fire!
+            androidx.work.WorkManager.getInstance(requireContext()).enqueue(testRequest);
+
+            Toast.makeText(getContext(), "Checking Morning Logic...", Toast.LENGTH_SHORT).show();
         });
 
         loadUserData();
@@ -464,6 +490,15 @@ public class HomeFragment extends Fragment {
         loadTaskGroups();
     }
 
+
+    private boolean isGoogleUser() {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) return false;
+        for (UserInfo profile : user.getProviderData()) {
+            if ("google.com".equals(profile.getProviderId())) return true;
+        }
+        return false;
+    }
 
     private Date stripTime(Date date) {
         Calendar c = Calendar.getInstance();

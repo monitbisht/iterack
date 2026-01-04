@@ -40,7 +40,7 @@
                     app:layout_constraintTop_toTopOf="parent" />
 
                 <TextView
-                    android:id="@+id/profile_name"
+                    android:id="@+id/profile_name_textView"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"
@@ -54,6 +54,8 @@
                     app:layout_constraintStart_toEndOf="@id/profileImage"
                     app:layout_constraintTop_toTopOf="@id/profileImage" />
 
+
+
                 <TextView
                     android:id="@+id/profile_email"
                     android:layout_width="0dp"
@@ -65,9 +67,9 @@
                     android:paddingStart="2dp"
                     android:paddingEnd="2dp"
                     android:paddingBottom="6dp"
-                    app:layout_constraintEnd_toEndOf="@id/profile_name"
-                    app:layout_constraintStart_toStartOf="@id/profile_name"
-                    app:layout_constraintTop_toBottomOf="@id/profile_name" />
+                    app:layout_constraintEnd_toEndOf="@id/profile_name_textView"
+                    app:layout_constraintStart_toStartOf="@id/profile_name_textView"
+                    app:layout_constraintTop_toBottomOf="@id/profile_name_textView" />
 
                 <ImageView
                     android:id="@+id/profile_edit_button"
@@ -75,13 +77,15 @@
                     android:layout_height="24dp"
                     android:src="@drawable/ic_edit"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="@id/profile_name"
+                    app:layout_constraintTop_toTopOf="@id/profile_name_textView"
                     app:tint="@color/mutated_blue"
                     android:clickable="true"
+                    android:visibility="invisible"
                     />
 
+
                 <View
-                    android:id="@+id/divider1"
+                    android:id="@+id/divider0"
                     android:layout_width="0dp"
                     android:layout_height="1dp"
                     android:layout_marginTop="4dp"
@@ -91,37 +95,40 @@
                     app:layout_constraintTop_toBottomOf="@id/profileImage" />
 
                 <ImageView
-                    android:id="@+id/passwordIcon"
+                    android:id="@+id/change_password_icon"
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:layout_marginTop="16dp"
                     android:src="@drawable/ic_password"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/divider1"
-                    app:tint="@color/profile_text_secondary" />
+                    app:layout_constraintTop_toBottomOf="@id/divider0"
+                    app:tint="@color/profile_text_secondary"
+                    android:clickable="true"/>
 
                 <TextView
-                    android:id="@+id/passwordText"
+                    android:id="@+id/change_password_textView"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"
                     android:text="Change Password"
                     android:textColor="@color/white"
                     android:textSize="16sp"
-                    app:layout_constraintBottom_toBottomOf="@id/passwordIcon"
-                    app:layout_constraintEnd_toStartOf="@id/passwordArrow"
-                    app:layout_constraintStart_toEndOf="@id/passwordIcon"
-                    app:layout_constraintTop_toTopOf="@id/passwordIcon" />
+                    android:clickable="true"
+                    app:layout_constraintBottom_toBottomOf="@id/change_password_icon"
+                    app:layout_constraintEnd_toStartOf="@id/change_password_arrow"
+                    app:layout_constraintStart_toEndOf="@id/change_password_icon"
+                    app:layout_constraintTop_toTopOf="@id/change_password_icon" />
 
                 <ImageView
-                    android:id="@+id/passwordArrow"
+                    android:id="@+id/change_password_arrow"
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:src="@drawable/ic_chevron_right"
-                    app:layout_constraintBottom_toBottomOf="@id/passwordIcon"
+                    app:layout_constraintBottom_toBottomOf="@id/change_password_icon"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="@id/passwordIcon"
-                    app:tint="@color/profile_text_secondary" />
+                    app:layout_constraintTop_toTopOf="@id/change_password_icon"
+                    app:tint="@color/profile_text_secondary"
+                    android:clickable="true"/>
 
                 <ImageView
                     android:id="@+id/appLockIcon"
@@ -130,10 +137,11 @@
                     android:layout_marginTop="24dp"
                     android:src="@drawable/ic_fingerprint"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/passwordIcon"
+                    app:layout_constraintTop_toBottomOf="@id/change_password_icon"
                     app:tint="@color/profile_text_secondary" />
 
                 <TextView
+                    android:id="@+id/app_lock_title"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"
@@ -141,19 +149,94 @@
                     android:textColor="@color/white"
                     android:textSize="16sp"
                     app:layout_constraintBottom_toBottomOf="@id/appLockIcon"
-                    app:layout_constraintEnd_toStartOf="@id/appLockSwitch"
+                    app:layout_constraintEnd_toStartOf="@id/app_lock_toggle_button"
                     app:layout_constraintStart_toEndOf="@id/appLockIcon"
                     app:layout_constraintTop_toTopOf="@id/appLockIcon" />
 
                 <com.google.android.material.switchmaterial.SwitchMaterial
-                    android:id="@+id/appLockSwitch"
+                    android:id="@+id/app_lock_toggle_button"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:checked="false"
                     app:layout_constraintBottom_toBottomOf="@id/appLockIcon"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="@id/appLockIcon"
                     app:thumbTint="@color/switch_thumb_tint"
                     app:trackTint="@color/switch_track_tint"/>
+
+
+                <ImageView
+                    android:id="@+id/biometrics_icon"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_marginTop="20dp"
+                    android:src="@drawable/ic_arrow_right"
+                    android:visibility="gone"
+                    app:layout_constraintTop_toBottomOf="@id/appLockIcon"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:tint="@color/profile_text_secondary" />
+
+                <TextView
+                    android:id="@+id/biometrics_title"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="Biometrics"
+                    android:textColor="@color/white"
+                    android:textSize="14sp"
+                    android:visibility="gone"
+                    app:layout_constraintTop_toTopOf="@id/biometrics_icon"
+                    app:layout_constraintBottom_toBottomOf="@id/biometrics_icon"
+                    app:layout_constraintStart_toEndOf="@id/biometrics_icon"
+                    app:layout_constraintEnd_toStartOf="@id/biometrics_toggle_button" />
+
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/biometrics_toggle_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"
+                    app:thumbTint="@color/switch_thumb_tint"
+                    app:trackTint="@color/switch_track_tint"
+                    app:layout_constraintTop_toTopOf="@id/biometrics_icon"
+                    app:layout_constraintBottom_toBottomOf="@id/biometrics_icon"
+                    app:layout_constraintEnd_toEndOf="parent" />
+
+                <ImageView
+                    android:id="@+id/device_credential_icon"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_marginTop="20dp"
+                    android:src="@drawable/ic_arrow_right"
+                    android:visibility="gone"
+                    app:layout_constraintTop_toBottomOf="@id/biometrics_icon"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:tint="@color/profile_text_secondary" />
+
+                <TextView
+                    android:id="@+id/device_credential_title"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="Device Credential"
+                    android:textColor="@color/white"
+                    android:textSize="14sp"
+                    android:visibility="gone"
+                    app:layout_constraintTop_toTopOf="@id/device_credential_icon"
+                    app:layout_constraintBottom_toBottomOf="@id/device_credential_icon"
+                    app:layout_constraintStart_toEndOf="@id/device_credential_icon"
+                    app:layout_constraintEnd_toStartOf="@id/device_credential_toggle_button" />
+
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/device_credential_toggle_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"
+                    app:thumbTint="@color/switch_thumb_tint"
+                    app:trackTint="@color/switch_track_tint"
+                    app:layout_constraintTop_toTopOf="@id/device_credential_icon"
+                    app:layout_constraintBottom_toBottomOf="@id/device_credential_icon"
+                    app:layout_constraintEnd_toEndOf="parent" />
+
 
             </androidx.constraintlayout.widget.ConstraintLayout>
         </com.google.android.material.card.MaterialCardView>
@@ -193,7 +276,7 @@
                     app:layout_constraintTop_toTopOf="parent" />
 
                 <com.google.android.material.switchmaterial.SwitchMaterial
-                    android:id="@+id/taskRemindersSwitch"
+                    android:id="@+id/task_reminder_switch"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:checked="true"
@@ -226,7 +309,7 @@
                     app:layout_constraintTop_toBottomOf="@id/divider1" />
 
                 <com.google.android.material.switchmaterial.SwitchMaterial
-                    android:id="@+id/soundSwitch"
+                    android:id="@+id/sound_switch"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:checked="true"
@@ -264,25 +347,25 @@
                 android:padding="16dp">
 
                 <TextView
-                    android:id="@+id/exportText"
+                    android:id="@+id/export_data_textView"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:text="Export Tasks"
                     android:textColor="@color/off_white"
                     android:textSize="16sp"
-                    app:layout_constraintEnd_toStartOf="@id/exportIcon"
+                    app:layout_constraintEnd_toStartOf="@id/export_data_icon"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     android:clickable="true"/>
 
                 <ImageView
-                    android:id="@+id/exportIcon"
+                    android:id="@+id/export_data_icon"
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:src="@drawable/ic_export"
-                    app:layout_constraintBottom_toBottomOf="@id/exportText"
+                    app:layout_constraintBottom_toBottomOf="@id/export_data_textView"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="@id/exportText"
+                    app:layout_constraintTop_toTopOf="@id/export_data_textView"
                     app:tint="@color/profile_text_secondary"
                     android:clickable="true"/>
 
@@ -294,28 +377,28 @@
                     android:background="@color/profile_divider"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/exportText" />
+                    app:layout_constraintTop_toBottomOf="@id/export_data_textView" />
 
                 <TextView
-                    android:id="@+id/resetText"
+                    android:id="@+id/reset_data_textView"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
                     android:text="Reset All Data"
                     android:textColor="@color/warning_red"
                     android:textSize="16sp"
-                    app:layout_constraintEnd_toStartOf="@id/resetIcon"
+                    app:layout_constraintEnd_toStartOf="@id/reset_data_icon"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/divider2" />
 
                 <ImageView
-                    android:id="@+id/resetIcon"
+                    android:id="@+id/reset_data_icon"
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:src="@drawable/ic_delete"
-                    app:layout_constraintBottom_toBottomOf="@id/resetText"
+                    app:layout_constraintBottom_toBottomOf="@id/reset_data_textView"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="@id/resetText"
+                    app:layout_constraintTop_toTopOf="@id/reset_data_textView"
                     app:tint="@color/warning_red" />
 
                 <View
@@ -326,7 +409,7 @@
                     android:background="@color/profile_divider"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/resetText" />
+                    app:layout_constraintTop_toBottomOf="@id/reset_data_textView" />
 
                 <TextView
                     android:id="@+id/languageText"

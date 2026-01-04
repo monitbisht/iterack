@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Base gradient -->
+    <item>
+        <shape>
+            <gradient
+                android:type="linear"
+                android:angle="90"
+                android:startColor="#111315"
+                android:endColor="#0C0D0E"/>
+        </shape>
+    </item>
+
+    <!-- Soft center light (optional) -->
+    <item>
+        <shape>
+            <gradient
+                android:type="radial"
+                android:centerX="0.5"
+                android:centerY="0.28"
+                android:gradientRadius="900dp"
+                android:startColor="#22000000"
+                android:endColor="#00000000"/>
+        </shape>
+    </item>
+
+</layer-list>

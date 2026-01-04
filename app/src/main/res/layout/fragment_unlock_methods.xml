@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="22dp"
+    android:background="@color/dark_background">
+
+    <!-- Decorative circle like signup -->
+    <View
+        android:layout_width="260dp"
+        android:layout_height="260dp"
+        android:rotation="32"
+        android:translationX="140dp"
+        android:translationY="-90dp"
+        android:alpha="0.40"
+        android:background="@drawable/rounded_background_dark"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- Decorative Box: Mid Left -->
+    <View
+        android:id="@+id/decorative_box_2"
+        android:layout_width="260dp"
+        android:layout_height="260dp"
+        android:background="@drawable/rounded_background_dark"
+        android:rotation="35"
+        android:translationX="-150dp"
+        android:translationY="390dp"
+        android:alpha="0.45"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <!-- Top Fingerprint Icon -->
+    <ImageView
+        android:id="@+id/unlockIcon"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:src="@drawable/ic_lock"
+        android:background="@drawable/circle_icon_bg"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:padding="8dp"
+        android:layout_marginTop="24dp"
+        app:tint="@color/cyan_accent" />
+
+    <!-- Title -->
+    <TextView
+        android:id="@+id/unlockTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Choose unlock methods"
+        android:textSize="26sp"
+        android:textColor="@color/bright_white"
+        android:layout_marginTop="10dp"
+        app:layout_constraintTop_toBottomOf="@id/unlockIcon"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <!-- Subtitle -->
+    <TextView
+        android:id="@+id/unlockSubtitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Use your biometrics and device passcode to unlock the app."
+        android:textColor="@color/soft_grey"
+        android:textSize="14sp"
+        android:layout_marginTop="6dp"
+        app:layout_constraintTop_toBottomOf="@id/unlockTitle"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <!-- Options Card -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/unlockMethodsCard"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="26dp"
+        app:cardCornerRadius="22dp"
+        app:cardBackgroundColor="@color/dark_surface"
+        app:layout_constraintTop_toBottomOf="@id/unlockSubtitle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <!-- Biometrics -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:src="@drawable/ic_fingerprint"
+                    app:tint="@color/cyan_accent" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="14dp"
+                    android:text="Biometrics"
+                    android:textColor="@color/bright_white"
+                    android:textSize="16sp"
+                    android:layout_weight="1"/>
+
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/switchBiometric"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:thumbTint="@color/switch_thumb_tint"
+                    app:trackTint="@color/switch_track_tint"/>
+            </LinearLayout>
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginVertical="16dp"
+                />
+
+            <!-- Device Passcode -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:src="@drawable/ic_mobile"
+                    app:tint="@color/cyan_accent" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="14dp"
+                    android:text="Device passcode"
+                    android:textColor="@color/bright_white"
+                    android:textSize="16sp"
+                    android:layout_weight="1"/>
+
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/switchDevicePasscode"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:thumbTint="@color/switch_thumb_tint"
+                    app:trackTint="@color/switch_track_tint"
+                    />
+            </LinearLayout>
+
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+    <!-- Save Button -->
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/save_unlock_prefs_button"
+        android:layout_width="0dp"
+        android:layout_height="58dp"
+        android:text="SAVE"
+        android:background="@drawable/animated_button"
+        android:textColor="@color/bright_white"
+        android:layout_marginTop="64dp"
+        app:layout_constraintTop_toBottomOf="@id/unlockMethodsCard"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

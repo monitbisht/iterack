@@ -263,7 +263,7 @@ public class SignupActivity extends AppCompatActivity {
             signUpPasswordLayout.setEndIconMode(TextInputLayout.END_ICON_NONE);
             return;
         } else if (!isValidPassword(password)) {
-            signupPassword.setError("Password must be 6+ chars, include a number & a symbol");
+            signupPassword.setError("Password must be 8+ chars, include a number & a symbol");
             signUpPasswordLayout.setEndIconMode(TextInputLayout.END_ICON_NONE);
             return;
         } else {

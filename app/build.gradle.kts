@@ -61,9 +61,16 @@ dependencies {
     implementation(libs.circleimageview)
     implementation(libs.materialcalendarview)
     implementation(libs.mpandroidchart)
+
+    // Glide for image loading
     implementation("com.github.bumptech.glide:glide:5.0.5")
 
+    // Material Components for Android
     implementation("com.google.android.material:material:1.12.0")
+
+    // Work Manager
+    val work_version = "2.11.0"
+    implementation ("androidx.work:work-runtime:$work_version")
 
     // Import the Firebase BoM
     implementation(platform("com.google.firebase:firebase-bom:34.6.0"))
