@@ -68,9 +68,15 @@ dependencies {
     // Material Components for Android
     implementation("com.google.android.material:material:1.12.0")
 
+    // Slide Button
+    implementation("com.ncorti:slidetoact:0.11.0")
+
     // Work Manager
     val work_version = "2.11.0"
     implementation ("androidx.work:work-runtime:$work_version")
+
+    // Splash Screen
+    implementation("androidx.core:core-splashscreen:1.0.1")
 
     // Import the Firebase BoM
     implementation(platform("com.google.firebase:firebase-bom:34.6.0"))

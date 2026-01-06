@@ -93,6 +93,7 @@ public class InsightFragment extends Fragment {
 
     }
 
+
     // 1. Load Task Data with Rendering
     private void loadInsightDataAndRender(String mode) {
 
@@ -107,6 +108,7 @@ public class InsightFragment extends Fragment {
                     else showEmptyMonthlyChart();
                     return;
                 }
+
 
                 updateCounters(tasksList);
 
@@ -530,6 +532,8 @@ public class InsightFragment extends Fragment {
         });
     }
 
+
+
     public int getMonthlyCompleted(List<Tasks> tasksList) {
         int count = 0;
 
@@ -916,6 +920,7 @@ public class InsightFragment extends Fragment {
 
         return count;
     }
+
 
 
     public interface AiCallback {
