@@ -391,7 +391,7 @@
                     android:lineSpacingExtra="4dp"
                     android:textSize="16sp"
                     android:text="Break large tasks into smaller, manageable steps. This increases momentum and reduces procrastination."
-                    android:textColor="@color/medium_gray" />
+                    android:textColor="@color/insight_white" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
@@ -441,7 +441,7 @@
                     android:lineSpacingExtra="4dp"
                     android:textSize="16sp"
                     android:text="Break large tasks into smaller, manageable steps. This increases momentum and reduces procrastination."
-                    android:textColor="@color/medium_gray" />
+                    android:textColor="@color/insight_white" />
             </LinearLayout>
 
         </androidx.cardview.widget.CardView>

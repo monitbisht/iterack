@@ -86,6 +86,7 @@ public class InsightFragment extends Fragment {
         weeklyTip = view.findViewById(R.id.weekly_tip);
 
 
+        setNewUserState();
         setupDropdown();
         showEmptyWeeklyChart(); // default mode only
 
@@ -106,6 +107,8 @@ public class InsightFragment extends Fragment {
                 if (tasksList == null || tasksList.isEmpty()) {
                     if (MODE_WEEKLY.equals(mode)) showEmptyWeeklyChart();
                     else showEmptyMonthlyChart();
+
+                    setNewUserState();
                     return;
                 }
 
@@ -213,6 +216,25 @@ public class InsightFragment extends Fragment {
         });
     }
 
+
+    // Method to set default "Welcome" data for new users
+    private void setNewUserState() {
+        // 1. Reset Counters
+        scoreText.setText("0");
+        currentStreakTv.setText("0 days");
+        longestStreakTv.setText("0 days");
+        totalCompletedTv.setText("0");
+        totalMissedTv.setText("0");
+
+        // 2. Set Welcome Messages
+        tipText.setText("Complete your first task to unlock insights.");
+        summaryText.setText("Your weekly summary will appear here once you start completing tasks.");
+        conclusionText.setText("Let's get productive!");
+        weeklyTip.setText("Tip: Start small! Add just one task for today to build momentum.");
+
+        // 3. Ensure Loading Animation is stopped
+        stopLoadingAnimation();
+    }
 
     // 2. Data Processing
     // Weekly: 7 entries, Mon..Sun
