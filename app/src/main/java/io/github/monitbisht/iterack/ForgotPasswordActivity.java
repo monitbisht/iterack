@@ -1,6 +1,7 @@
 package io.github.monitbisht.iterack;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -51,52 +52,43 @@ public class ForgotPasswordActivity extends AppCompatActivity {
             emailInput.setError("Email is required");
             emailInput.requestFocus();
             return;
-        } else if (!isValidEmail(email)) {
+        }
+
+        if (!isValidEmail(email)) {
             emailInput.setError("Enter a valid email");
             emailInput.requestFocus();
             return;
-        } else {
-            emailInput.setError(null);
         }
 
+        emailInput.setError(null);
         resetButton.setEnabled(false);
         progressBar.setVisibility(View.VISIBLE);
 
-
-        auth.fetchSignInMethodsForEmail(email)
+        auth.sendPasswordResetEmail(email)
                 .addOnCompleteListener(task -> {
-
                     resetButton.setEnabled(true);
                     progressBar.setVisibility(View.GONE);
 
-                    boolean exists = task.getResult().getSignInMethods() != null &&
-                            !task.getResult().getSignInMethods().isEmpty();
+                    if (task.isSuccessful()) {
+                        Toast.makeText(
+                                this,
+                                "If an account exists, a reset link has been sent.",
+                                Toast.LENGTH_LONG
+                        ).show();
+                        finish();
+                    } else {
+                        String errorMsg = "Connection failed. Please check your internet.";
 
+                        if (task.getException() != null) {
+                            // Log the real error for your own debugging
+                            Log.e("ResetPassword", "Error: " + task.getException().getMessage());
+                        }
 
-                    if (!exists) {
-                        emailInput.setError("No account found with this email");
-                        emailInput.requestFocus();
-                        return;
+                        Toast.makeText(this, errorMsg, Toast.LENGTH_LONG).show();
                     }
-
-                    auth.sendPasswordResetEmail(email)
-                            .addOnCompleteListener(sendTask -> {
-
-                                resetButton.setEnabled(true);
-                                progressBar.setVisibility(View.GONE);
-
-                                if (sendTask.isSuccessful()) {
-                                    Toast.makeText(this,
-                                            "Password reset link sent!",
-                                            Toast.LENGTH_LONG).show();
-                                } else {
-                                    Toast.makeText(this,
-                                            "Error: " + sendTask.getException().getMessage(),
-                                            Toast.LENGTH_LONG).show();
-                                }
-                            });
                 });
     }
+
     boolean isValidEmail(String email) {
         return email != null && android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches();
     }

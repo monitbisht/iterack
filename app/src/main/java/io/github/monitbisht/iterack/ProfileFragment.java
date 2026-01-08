@@ -109,10 +109,6 @@ public class ProfileFragment extends Fragment {
         changePasswordIcon.setOnClickListener(passwordClickListener);
         changePasswordArrow.setOnClickListener(passwordClickListener);
 
-        //Profile Pic for Email Login Users
-        if (isGoogleUser() == false){
-            profileImage.setImageResource(R.drawable.profile_pic);
-        }
 
 
         //Notification Switch
@@ -368,6 +364,8 @@ public class ProfileFragment extends Fragment {
 
         if (cachedPhoto != null) {
             Glide.with(requireContext()).load(cachedPhoto).placeholder(R.drawable.profile).into(profileImage);
+        }else {
+            profileImage.setImageResource(R.drawable.profile_pic);
         }
 
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
@@ -386,7 +384,11 @@ public class ProfileFragment extends Fragment {
 
                     if (name != null) profileName.setText(name);
                     if (email != null) profileEmail.setText(email);
-                    if (photoUrl != null) Glide.with(requireContext()).load(photoUrl).placeholder(R.drawable.profile).into(profileImage);
+                    if (photoUrl != null) {
+                        Glide.with(requireContext()).load(photoUrl).placeholder(R.drawable.profile).into(profileImage);
+                    }else {
+                        profileImage.setImageResource(R.drawable.profile_pic);
+                    }
                 })
                 .addOnFailureListener(e -> Log.e("ProfileFragment", "Failed to fetch user data: " + e.getMessage()));
     }
