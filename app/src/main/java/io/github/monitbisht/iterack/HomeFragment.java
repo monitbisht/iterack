@@ -381,6 +381,9 @@ public class HomeFragment extends Fragment {
 
                 for (Tasks t : result) {
 
+                    // Skip tasks not in current month
+                    if (!isTaskInCurrentMonth(t)) continue;
+
                     // Skip missed tasks entirely
                     if (t.getStatus().equals("Missed")) {
                         continue;
@@ -483,6 +486,29 @@ public class HomeFragment extends Fragment {
 
     }
 
+    private boolean isTaskInCurrentMonth(Tasks task) {
+        if (task.getStartDate() == null || task.getEndDate() == null) return false;
+
+        Calendar now = Calendar.getInstance();
+        int currentMonth = now.get(Calendar.MONTH);
+        int currentYear = now.get(Calendar.YEAR);
+
+        Calendar startCal = Calendar.getInstance();
+        startCal.setTime(task.getStartDate());
+
+        Calendar endCal = Calendar.getInstance();
+        endCal.setTime(task.getEndDate());
+
+        boolean startInCurrentMonth =
+                startCal.get(Calendar.MONTH) == currentMonth &&
+                        startCal.get(Calendar.YEAR) == currentYear;
+
+        boolean endInCurrentMonth =
+                endCal.get(Calendar.MONTH) == currentMonth &&
+                        endCal.get(Calendar.YEAR) == currentYear;
+
+        return startInCurrentMonth || endInCurrentMonth;
+    }
 
     @Override
     public void onResume() {
