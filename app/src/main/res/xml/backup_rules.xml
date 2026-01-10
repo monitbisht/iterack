@@ -8,6 +8,7 @@
 <full-backup-content>
     <!--
    <include domain="sharedpref" path="."/>
-   <exclude domain="sharedpref" path="device.xml"/>
 -->
+    <!-- Exclude first-launch preference -->
+    <exclude domain="sharedpref" path="ITERACK_PREFS.xml"/>
 </full-backup-content>

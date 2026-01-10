@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.biometric.BiometricManager;
 import androidx.biometric.BiometricPrompt;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.bumptech.glide.Glide;
@@ -31,6 +32,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.concurrent.Executor;
+
 
 public class ProfileFragment extends Fragment {
 
@@ -40,6 +43,7 @@ public class ProfileFragment extends Fragment {
     private ImageView changePasswordIcon, changePasswordArrow , exportDataIcon , resetDataIcon;
 
     private SwitchMaterial appLockSwitch, biometricSwitch, deviceCredentialSwitch;
+    View appLockRow;
 
     private SwitchMaterial taskReminderSwitch, soundSwitch;
     private ImageView biometricIcon, deviceIcon;
@@ -73,6 +77,7 @@ public class ProfileFragment extends Fragment {
 
 
         // app-lock related views
+        appLockRow = view.findViewById(R.id.appLockRow);
         appLockSwitch = view.findViewById(R.id.app_lock_toggle_button);
         biometricSwitch = view.findViewById(R.id.biometrics_toggle_button);
         deviceCredentialSwitch = view.findViewById(R.id.device_credential_toggle_button);
@@ -144,79 +149,92 @@ public class ProfileFragment extends Fragment {
         });
 
         // App lock main toggle - require authentication to enable/disable
-        appLockSwitch.setOnCheckedChangeListener((button, isChecked) -> {
 
-            appLockSwitch.setOnCheckedChangeListener(null);
-            appLockSwitch.setChecked(!isChecked);
-            appLockSwitch.post(() -> appLockSwitch.setOnCheckedChangeListener((b, c) -> {})); // temporary noop
+        appLockSwitch.setClickable(false);
 
-            if (isChecked) {
-                // enabling
+        appLockRow.setOnClickListener(v -> {
+            boolean enabled = lockManager.isEnabled();
+
+            if (!enabled) {
                 if (lockManager.isFirstTime()) {
-                    // First time -> open setup screens (user chooses methods)
                     openSetupFlow();
-                    // leave UI unchanged here; after saving preferences the UI is updated
-                    restoreAppLockListener();
                     return;
                 }
 
-                // not first time -> authenticate and enable
                 authenticate(() -> {
                     lockManager.setEnabled(true);
-                    // show method switches when enabled
                     setUnlockMethodsVisibility(true);
-                    biometricSwitch.setChecked(lockManager.biometrics());
-                    deviceCredentialSwitch.setChecked(lockManager.deviceCredential());
                     appLockSwitch.setChecked(true);
-                    restoreAppLockListener();
                 }, () -> {
-                    // failed
                     Toast.makeText(requireContext(), "Authentication failed", Toast.LENGTH_SHORT).show();
                     appLockSwitch.setChecked(false);
-                    restoreAppLockListener();
                 });
 
             } else {
-                // disabling -> authenticate then set disabled
                 authenticate(() -> {
                     lockManager.setEnabled(false);
                     setUnlockMethodsVisibility(false);
                     appLockSwitch.setChecked(false);
-                    restoreAppLockListener();
                 }, () -> {
-                    // failed -> keep enabled
                     appLockSwitch.setChecked(true);
-                    restoreAppLockListener();
                 });
             }
         });
 
 
-        biometricSwitch.setOnCheckedChangeListener((button, checked) -> {
-            // If switches hidden then ignore
+        biometricSwitch.setOnClickListener(v -> {
             if (biometricSwitch.getVisibility() != View.VISIBLE) return;
 
-            // require auth
+            boolean currentBiometric = lockManager.biometrics();
+            boolean deviceEnabled = lockManager.deviceCredential();
+            boolean newValue = !currentBiometric;
+
+            // Block turning OFF last method
+            if (!newValue && !deviceEnabled) {
+                Toast.makeText(
+                        requireContext(),
+                        "At least one unlock method must be enabled",
+                        Toast.LENGTH_SHORT
+                ).show();
+                biometricSwitch.setChecked(true);
+                return;
+            }
+
             authenticate(() -> {
-                lockManager.setBiometrics(checked);
-                biometricSwitch.setChecked(checked);
+                lockManager.setBiometrics(newValue);
+                biometricSwitch.setChecked(newValue);
             }, () -> {
-                biometricSwitch.setChecked(!checked); // revert
-                Toast.makeText(requireContext(), "Authentication required", Toast.LENGTH_SHORT).show();
+                biometricSwitch.setChecked(currentBiometric);
             });
         });
 
-        deviceCredentialSwitch.setOnCheckedChangeListener((button, checked) -> {
+
+        deviceCredentialSwitch.setOnClickListener(v -> {
             if (deviceCredentialSwitch.getVisibility() != View.VISIBLE) return;
 
+            boolean currentDevice = lockManager.deviceCredential();
+            boolean biometricEnabled = lockManager.biometrics();
+            boolean newValue = !currentDevice;
+
+            // Block turning OFF last method
+            if (!newValue && !biometricEnabled) {
+                Toast.makeText(
+                        requireContext(),
+                        "At least one unlock method must be enabled",
+                        Toast.LENGTH_SHORT
+                ).show();
+                deviceCredentialSwitch.setChecked(true);
+                return;
+            }
+
             authenticate(() -> {
-                lockManager.setDeviceCredential(checked);
-                deviceCredentialSwitch.setChecked(checked);
+                lockManager.setDeviceCredential(newValue);
+                deviceCredentialSwitch.setChecked(newValue);
             }, () -> {
-                deviceCredentialSwitch.setChecked(!checked);
-                Toast.makeText(requireContext(), "Authentication required", Toast.LENGTH_SHORT).show();
+                deviceCredentialSwitch.setChecked(currentDevice);
             });
         });
+
 
         resetData.setOnClickListener(v -> {
             clearData();
@@ -241,17 +259,6 @@ public class ProfileFragment extends Fragment {
         });
     }
 
-    private void restoreAppLockListener() {
-        appLockSwitch.setOnCheckedChangeListener((button, isChecked) -> {
-            // re-attach the logic by reloading the fragment view (simpler)
-            // Simpler approach: just recreate fragment to read state — safe and minimal change.
-            requireActivity().getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.frame_layout, new ProfileFragment())
-                    .commit();
-        });
-    }
-
     private void openSetupFlow() {
         // Open the setup fragment where user chooses unlock methods.
         requireActivity().getSupportFragmentManager()
@@ -272,56 +279,67 @@ public class ProfileFragment extends Fragment {
     }
 
     // Authenticate user using BiometricPrompt + device credential fallback.
-    // onSuccess / onFail are run on main thread.
-        private void authenticate(Runnable onSuccess, Runnable onFail) {
+    private void authenticate(@NonNull Runnable onSuccess,
+                              @NonNull Runnable onFail) {
 
-            BiometricPrompt.PromptInfo promptInfo =
-                    new BiometricPrompt.PromptInfo.Builder()
-                            .setTitle("Confirm your identity")
-                            .setSubtitle("Authentication required")
-                            .setAllowedAuthenticators(
-                                    BiometricManager.Authenticators.BIOMETRIC_STRONG |
-                                            BiometricManager.Authenticators.DEVICE_CREDENTIAL)
-                            .build();
+        Context context = requireContext();
 
-            BiometricPrompt prompt =
-                    new BiometricPrompt(requireActivity(),
-                            requireActivity().getMainExecutor(),
-                            new BiometricPrompt.AuthenticationCallback() {
+        int authenticators = 0;
 
-                                @Override
-                                public void onAuthenticationSucceeded(
-                                        @NonNull BiometricPrompt.AuthenticationResult result) {
-
-                                    onSuccess.run();
-                                }
-
-                                @Override
-                                public void onAuthenticationFailed() {
-                                    // Biometric failures should allow fallback to PIN.
-                                    Snackbar.make(requireView(), "Try again", Snackbar.LENGTH_SHORT).show();
-                                }
-
-                                @Override
-                                public void onAuthenticationError(int errorCode,
-                                                                  @NonNull CharSequence errString) {
-
-                                    // DEVICE CREDENTIAL SUCCESS = ERROR_CANCELED or ERROR_USER_CANCELED
-                                    if (errorCode == BiometricPrompt.ERROR_CANCELED ||
-                                            errorCode == BiometricPrompt.ERROR_USER_CANCELED) {
-
-                                        // Treat as success: user completed PIN authentication
-                                        onSuccess.run();
-                                        return;
-                                    }
-
-                                    // REAL FAILURES ONLY
-                                    onFail.run();
-                                }
-                            });
-
-            prompt.authenticate(promptInfo);
+        // Respect user preferences
+        if (lockManager.biometrics()) {
+            authenticators |= BiometricManager.Authenticators.BIOMETRIC_STRONG;
         }
+
+        if (lockManager.deviceCredential()) {
+            authenticators |= BiometricManager.Authenticators.DEVICE_CREDENTIAL;
+        }
+
+        // No authentication method enabled → block
+        if (authenticators == 0) {
+            Toast.makeText(context,
+                    "No authentication method enabled",
+                    Toast.LENGTH_SHORT).show();
+            onFail.run();
+            return;
+        }
+
+        Executor executor = ContextCompat.getMainExecutor(context);
+
+        BiometricPrompt biometricPrompt =
+                new BiometricPrompt(requireActivity(), executor,
+                        new BiometricPrompt.AuthenticationCallback() {
+
+                            @Override
+                            public void onAuthenticationSucceeded(
+                                    @NonNull BiometricPrompt.AuthenticationResult result) {
+                                onSuccess.run();
+                            }
+
+                            @Override
+                            public void onAuthenticationFailed() {
+                                // biometric rejected, prompt still active
+                            }
+
+                            @Override
+                            public void onAuthenticationError(
+                                    int errorCode,
+                                    @NonNull CharSequence errString) {
+
+                                // User cancelled or system cancelled
+                                onFail.run();
+                            }
+                        });
+
+        BiometricPrompt.PromptInfo promptInfo =
+                new BiometricPrompt.PromptInfo.Builder()
+                        .setTitle("Confirm your identity")
+                        .setSubtitle("Authentication required")
+                        .setAllowedAuthenticators(authenticators)
+                        .build();
+
+        biometricPrompt.authenticate(promptInfo);
+    }
 
     // password click listener
     private final View.OnClickListener passwordClickListener = v -> {
