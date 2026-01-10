@@ -60,8 +60,7 @@
             android:resource="@xml/provider_paths"/>
     </provider>
 
-
-    <meta-data
+        <meta-data
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />
     </application>

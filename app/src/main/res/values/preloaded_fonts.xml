@@ -3,5 +3,6 @@
     <array name="preloaded_fonts" translatable="false">
         <item>@font/cormorant_garamond</item>
         <item>@font/playfair_display</item>
+        <item>@font/poppins_light</item>
     </array>
 </resources>

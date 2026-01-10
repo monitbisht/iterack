@@ -80,7 +80,7 @@ public class ForgotPasswordActivity extends AppCompatActivity {
                         String errorMsg = "Connection failed. Please check your internet.";
 
                         if (task.getException() != null) {
-                            // Log the real error for your own debugging
+                            // Log the real error for debugging
                             Log.e("ResetPassword", "Error: " + task.getException().getMessage());
                         }
 
