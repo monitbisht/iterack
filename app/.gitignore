@@ -1,2 +1,6 @@
-/build
+# Android Studio / IntelliJ
+.idea/
+*.iml
+
+# Firebase
 app/google-services.json
