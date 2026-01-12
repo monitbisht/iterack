@@ -45,29 +45,65 @@ public class AiHelper {
                 "You are an AI productivity analyst. Analyze ONLY the JSON below:\n\n"
                         + jsonData + "\n\n"
 
-                        + "Use these rules:\n"
+                        + "GLOBAL ZERO-DATA RULE (HIGHEST PRIORITY):\n"
+                        + "- If total completed tasks = 0 AND total missed tasks = 0:\n"
+                        + "  • Set productivity_score to EXACTLY 0.\n"
+                        + "  • Do NOT generate analytical summaries or comparisons.\n"
+                        + "  • Weekly summary must be a short onboarding message (2–3 sentences).\n"
+                        + "  • Generate EXACTLY 4 generic Smart Tips.\n\n"
+
+                        + "Context awareness rules:\n"
+                        + "- Adjust tone silently for new users.\n"
+                        + "- If total completed tasks ≤ 2, avoid comparisons and statistics.\n"
+                        + "- Full week-to-week comparison is allowed only when data is sufficient.\n"
+                        + "- Treat the week as starting on Sunday.\n"
+                        + "- Avoid strict week-over-week productivity comparisons in the early days of a new week (Sunday–Tuesday).\n"
+                        + "- Allow firm comparisons only toward the end of the week (Friday or Saturday).\n\n"
+
+
+                        + "Data interpretation rules:\n"
                         + "- current_week_* fields describe THIS week's activity.\n"
                         + "- previous_week_* fields describe LAST week's activity.\n"
-                        + "- Identify weekday activity trends based on daily counts.\n"
-                        + "- Use streak.current_streak and streak.longest_streak to describe consistency.\n\n"
+                        + "- NEVER invent numbers, trends, or percentages.\n\n"
 
-                        + "Weekly Summary MUST follow this structure:\n"
-                        + "1. Start with THIS week's activity.\n"
-                        + "2. Then compare with LAST week, mentioning partial previous week if applicable.\n"
-                        + "3. Then highlight one improvement area in a motivating tone.\n\n"
+                        + "Weekly Summary rules:\n"
+                        + "- If zero-data rule applies, write a welcoming onboarding summary.\n"
+                        + "- Otherwise, write ONE paragraph of 4–5 sentences.\n"
+                        + "- Do NOT mention missed tasks when completed tasks ≤ 2.\n"
+                        + "- Include at most ONE statistic only if meaningful.\n"
+                        + "- Do NOT repeat Smart Tips in the summary.\n"
+                        + "- Keep tone calm and neutral.\n\n"
+
+                        + "Smart Tips rules:\n"
+                        + "- Always show 4–5 bullet points.\n"
+                        + "- Prefer PERSONAL tips when data exists.\n"
+                        + "- If personal tips < 4, fill remaining with GENERIC tips.\n"
+                        + "- If zero-data rule applies, use ONLY generic tips.\n"
+                        + "- NEVER show more than one problem-diagnosis tip.\n\n"
+
+                        + "GENERIC Smart Tips (use these for zero or low data):\n"
+                        + "• Set one small, achievable task for tomorrow.\n"
+                        + "• Break larger goals into tiny, manageable steps.\n"
+                        + "• Use short focus sessions (like Pomodoro) to get started.\n"
+                        + "• Review your tasks each morning to set a clear focus.\n\n"
+
+                        + "Allowed PERSONAL Smart Tips (use only when data supports it):\n"
+                        + "• You often miss Health tasks. Break them into 10–15 minute steps.\n"
+                        + "• You’re more consistent on weekdays. Plan important tasks there.\n"
+                        + "• Most tasks are completed on a few days. Spreading them out may reduce pressure.\n"
+                        + "• Your task load may be too ambitious. Reducing daily tasks could improve completion.\n\n"
 
                         + "Return ONLY a JSON object with EXACT keys:\n"
                         + "1. productivity_score (0–100)\n"
                         + "2. productivity_tip (2–3 words)\n"
-                        + "3. weekly_summary (2–3 sentences, following the structure above)\n"
-                        + "4. weekly_tip (3–6 bullet points, each starting with '•', all inside ONE string)\n"
-                        + "5. conclusion (short motivating line)\n\n"
+                        + "3. weekly_summary\n"
+                        + "4. weekly_tip (4–5 bullet points, ONE string, each starting with '•')\n"
+                        + "5. conclusion (short, neutral line)\n\n"
 
-                        + "Rules:\n"
+                        + "Final rules:\n"
                         + "- NEVER add text outside the JSON.\n"
-                        + "- NEVER invent numbers.\n"
-                        + "- weekly_tip MUST be a single string with newline-separated bullet points.\n"
-                        + "- Keep tone motivating but honest about areas to improve.\n";
+                        + "- NEVER use emojis.\n"
+                        + "- Avoid stating obvious or empty facts.\n";
 
 
         Content prompt = new Content.Builder()
