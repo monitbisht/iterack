@@ -736,6 +736,21 @@ public class InsightFragment extends Fragment {
             String conclusion = obj.optString("conclusion", "");
             String wTip = obj.optString("weekly_tip", "");
 
+            // Clamp score for low-data users
+            int currentStreak = Integer.parseInt( currentStreakTv.getText().toString().split(" ")[0] );
+            if (currentStreak <= 2) {
+                score = Math.min(score, 15);
+            } else if (currentStreak <= 5) {
+                score = Math.min(score, 30);
+            } else if (currentStreak <= 15) {
+                score = Math.min(score, 45);
+            } else if (currentStreak <= 30) {
+                score = Math.min(score, 70);
+            } else if (currentStreak <= 45) {
+                score = Math.min(score, 90);
+            } else {
+                score = Math.min(score, 100); }
+
             // Set texts
             scoreText.setText(String.valueOf(score));
             tipText.setText(tip);
