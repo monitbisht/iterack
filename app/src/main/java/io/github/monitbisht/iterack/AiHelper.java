@@ -17,8 +17,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * Simple helper that calls the Firebase AI generative model using
- * the Java compatibility futures wrapper. Adjust model id as needed.
+ * Simple helper that calls the Firebase AI generative model.
  */
 public class AiHelper {
 
@@ -28,7 +27,7 @@ public class AiHelper {
     private final ExecutorService executor;
 
     public AiHelper() {
-        // Change model id if you want a different one
+        // Initialize Firebase AI Model (Gemini 2.5 Flash)
         GenerativeModel ai = FirebaseAI.getInstance(GenerativeBackend.googleAI())
                 .generativeModel("gemini-2.5-flash");
 
@@ -36,13 +35,12 @@ public class AiHelper {
         executor = Executors.newSingleThreadExecutor();
     }
 
-    /**
-     * Send weekly JSON and ask the model to return a strict JSON object.
-     * Result forwarded to the provided callback.
-     */
+    // Generates a weekly productivity summary using the provided JSON data
     public void generateWeeklySummary(String jsonData, InsightFragment.AiCallback callback) {
         if (jsonData == null) jsonData = "{}";
 
+        // Construct the strict Prompt for the AI
+        // Rules enforce specific JSON keys and analysis logic for week-over-week comparison
         String promptText =
                 "You are an AI productivity analyst. Analyze ONLY the JSON below:\n\n"
                         + jsonData + "\n\n"
@@ -72,12 +70,12 @@ public class AiHelper {
                         + "- Keep tone motivating but honest about areas to improve.\n";
 
 
-
         Content prompt = new Content.Builder()
                 .addText(promptText)
                 .build();
 
         try {
+            // Call the AI model asynchronously
             ListenableFuture<GenerateContentResponse> future = model.generateContent(prompt);
 
             Futures.addCallback(future, new FutureCallback<GenerateContentResponse>() {
@@ -90,7 +88,8 @@ public class AiHelper {
                         Log.e(TAG, "Failed to read model text", ex);
                     }
 
-                    // Defensive: if model returned plain text with JSON embedded, try to extract JSON substring
+                    // Extract JSON from the raw text response
+                    // (Removes any unwanted text the AI might send before or after the data)
                     String jsonOut = extractJsonSubstring(text);
                     if (jsonOut == null) jsonOut = text;
 
@@ -111,7 +110,7 @@ public class AiHelper {
         }
     }
 
-    // Attempt to extract the first {...} block from arbitrary text.
+    // Helper Method: Finds the actual JSON data inside the text response
     private String extractJsonSubstring(String text) {
         if (text == null) return null;
         int start = text.indexOf('{');

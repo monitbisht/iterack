@@ -102,15 +102,15 @@ public class LoginActivity extends AppCompatActivity {
 
         // Navigation to Forgot Password Page
         forgotPasswordTextView.setOnClickListener(v -> {
-           startActivity(new Intent(LoginActivity.this , ForgotPasswordActivity.class));
+            startActivity(new Intent(LoginActivity.this , ForgotPasswordActivity.class));
         });
 
-        // Navigation to Home Page
+        // Login Process
         loginButton.setOnClickListener(v -> {
             loginUser();
         });
 
-        // Login via Google SignIn
+        // Google Sign-In Flow
         googleSignInButton.setOnClickListener(v -> {
             googleSignIn();
         });
@@ -129,7 +129,6 @@ public class LoginActivity extends AppCompatActivity {
                 .build();
 
         // Ask Credential Manager to retrieve Google credentials
-
         CredentialManager credentialManager = CredentialManager.create(LoginActivity.this);
 
         credentialManager.getCredentialAsync(
@@ -153,6 +152,7 @@ public class LoginActivity extends AppCompatActivity {
         );
     }
 
+    // Process the credential returned by Google
     private void handleSignIn(Credential credential) {
 
         if (credential instanceof CustomCredential) {
@@ -166,15 +166,17 @@ public class LoginActivity extends AppCompatActivity {
                 GoogleIdTokenCredential googleIdTokenCredential =
                         GoogleIdTokenCredential.createFrom(credentialData);
 
+                // Proceed to Firebase Authentication
                 firebaseAuthWithGoogle(googleIdTokenCredential.getIdToken());
                 return;
             }
         }
 
-        Log.w(TAG, "Credential is not of type Google ID!");
+        Log.w("LoginActivity", "Credential is not of type Google ID!");
     }
 
 
+    // Exchange Google Token for Firebase Auth Credential
     private void firebaseAuthWithGoogle(String idToken) {
         AuthCredential credential = GoogleAuthProvider.getCredential(idToken, null);
 
@@ -187,6 +189,7 @@ public class LoginActivity extends AppCompatActivity {
                         boolean isNewUser =
                                 task.getResult().getAdditionalUserInfo().isNewUser();
 
+                        // Create Firestore entry only if user is new
                         if (isNewUser) {
                             saveGoogleUserToFirestore(user);
                         }
@@ -202,6 +205,7 @@ public class LoginActivity extends AppCompatActivity {
                 });
     }
 
+    // Store Google Account details in Firestore
     private void saveGoogleUserToFirestore(FirebaseUser user) {
         Map<String, Object> data = new HashMap<>();
         data.put("name", user.getDisplayName());
@@ -219,23 +223,26 @@ public class LoginActivity extends AppCompatActivity {
                         Log.e("Firestore", "Error saving Google user: " + e.getMessage()));
     }
 
+    // Standard Email/Password Login
     private void loginUser() {
         String email = emailEditText.getText().toString().trim();
         String password = passwordEditText.getText().toString().trim();
 
+        // Check if email is empty
         if (email.isEmpty()) {
             emailEditText.setError("Email is required");
             emailEditText.requestFocus();
             return;
         }
 
+        // Check format
         if (!isValidEmail(email)) {
             emailEditText.setError("Enter a valid email");
             emailEditText.requestFocus();
             return;
         }
 
-
+        // Check password validity
         if (password.isEmpty()) {
             passwordEditText.setError("Password is required");
             passwordEditText.requestFocus();
@@ -289,14 +296,15 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
     }
+
+    // Helper: Regex for email
     boolean isValidEmail(String email) {
         return email != null && android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches();
     }
 
+    // Helper: Regex for password complexity
     boolean isValidPassword(String password) {
         String passwordRegex = "^(?=.*[0-9])(?=.*[@#$%^&+=!]).{6,}$";
         return password != null && password.matches(passwordRegex);
     }
-
-
 }

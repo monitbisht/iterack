@@ -20,17 +20,14 @@ public class AppLockEnableFragment extends Fragment {
     private AppCompatButton turnOnButton;
     private TextView maybeLaterText;
 
-
-
     public AppLockEnableFragment() {
         // Required empty public constructor
     }
 
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
+        // Inflate UI layout
         View view = inflater.inflate(R.layout.fragment_app_lock_enable, container, false);
         turnOnButton = view.findViewById(R.id.turn_on_app_lock_button);
         maybeLaterText = view.findViewById(R.id.maybe_later_textView);
@@ -42,6 +39,7 @@ public class AppLockEnableFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        // User chose to Enable -> Go to Unlock Method Selection screen
         turnOnButton.setOnClickListener(v -> {
             FragmentManager manager = requireActivity().getSupportFragmentManager();
             FragmentTransaction transaction = manager.beginTransaction();
@@ -50,11 +48,12 @@ public class AppLockEnableFragment extends Fragment {
             transaction.commit();
         });
 
+        // User chose Later -> Return to Profile screen
         maybeLaterText.setOnClickListener(v -> {
             requireActivity().getSupportFragmentManager()
-            .beginTransaction()
-            .replace(R.id.frame_layout, new ProfileFragment())
-            .commit();
+                    .beginTransaction()
+                    .replace(R.id.frame_layout, new ProfileFragment())
+                    .commit();
         });
 
     }

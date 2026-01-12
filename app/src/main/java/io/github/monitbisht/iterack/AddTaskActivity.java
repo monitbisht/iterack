@@ -47,25 +47,27 @@ public class AddTaskActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         // Inputs
-         taskName = binding.projectName;
-         taskDescription = binding.projectDescription;
+        taskName = binding.projectName;
+        taskDescription = binding.projectDescription;
 
-       // Group buttons
-         workButton = binding.workButton;
-         personalButton = binding.personalButton;
-         healthButton = binding.healthButton;
-         studyButton = binding.studyButton;
-       // Date buttons
-         startDateBtn = binding.startDateButton;
-         endDateBtn = binding.endDateButton;
+        // Group buttons
+        workButton = binding.workButton;
+        personalButton = binding.personalButton;
+        healthButton = binding.healthButton;
+        studyButton = binding.studyButton;
 
-       // Submit button
-         submitButton = binding.addProjectSubmitButton;
+        // Date buttons
+        startDateBtn = binding.startDateButton;
+        endDateBtn = binding.endDateButton;
 
-       // Back button
-         imageView = binding.backArrow;
+        // Submit button
+        submitButton = binding.addProjectSubmitButton;
+
+        // Back button
+        imageView = binding.backArrow;
 
 
+        // Handle Back Navigation to Main Activity
         imageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -77,15 +79,17 @@ public class AddTaskActivity extends AppCompatActivity {
             }
         });
 
+        // Group Selection Logic: Ensure only one category is selected at a time
         View.OnClickListener buttonClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // Reset all buttons to unchecked state
                 workButton.setChecked(false);
                 personalButton.setChecked(false);
                 healthButton.setChecked(false);
                 studyButton.setChecked(false);
 
-
+                // Highlight the clicked button and save the category name
                 MaterialButton clickedBtn = (MaterialButton) v;
                 clickedBtn.setChecked(true);
 
@@ -93,13 +97,14 @@ public class AddTaskActivity extends AppCompatActivity {
             }
         };
 
+        // Attach listeners to group buttons
         workButton.setOnClickListener(buttonClickListener);
         personalButton.setOnClickListener(buttonClickListener);
         healthButton.setOnClickListener(buttonClickListener);
         studyButton.setOnClickListener(buttonClickListener);
 
 
-
+        // Start Date Picker Logic
         startDateBtn.setOnClickListener(v -> {
 
             final Calendar cal = Calendar.getInstance();
@@ -107,6 +112,7 @@ public class AddTaskActivity extends AppCompatActivity {
             int month = (savedStartMonth != null) ? savedStartMonth : cal.get(Calendar.MONTH);
             int day = (savedStartDay != null) ? savedStartDay : cal.get(Calendar.DAY_OF_MONTH);
 
+            // Open Date Dialog
             DatePickerDialog dialog = new DatePickerDialog(
                     AddTaskActivity.this,
                     (view, y, m, d) -> {
@@ -114,6 +120,7 @@ public class AddTaskActivity extends AppCompatActivity {
                         savedStartMonth = m;
                         savedStartDay = d;
 
+                        // Display selected date on button
                         String date = d + "/" + (m + 1) + "/" + y;
                         startDateBtn.setText(date);
                     },
@@ -123,6 +130,7 @@ public class AddTaskActivity extends AppCompatActivity {
             dialog.show();
         });
 
+        // End Date Picker Logic
         endDateBtn.setOnClickListener(v -> {
 
             final Calendar cal = Calendar.getInstance();
@@ -147,6 +155,7 @@ public class AddTaskActivity extends AppCompatActivity {
         });
 
 
+        // Submit Button Logic
         submitButton.setOnClickListener(v -> {
 
             String taskTitle = taskName.getText().toString().trim();
@@ -156,7 +165,8 @@ public class AddTaskActivity extends AppCompatActivity {
             String group = selectedGroup;
 
 
-            // VALIDATION PART
+            // Validation Part (For checking empty fields)
+
             if (taskTitle.isEmpty()) {
                 Toast.makeText(this, "Enter task name", Toast.LENGTH_SHORT).show();
                 return;
@@ -187,11 +197,13 @@ public class AddTaskActivity extends AppCompatActivity {
                 startDate = sdf.parse(startDateText);
                 endDate = sdf.parse(endDateText);
 
+                // Prevent past dates
                 if (startDate.before(today)) {
                     Toast.makeText(this, "Start date can't be before today", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
+                // Prevent End Date before Start Date
                 if (endDate.before(startDate)) {
                     Toast.makeText(this, "End date cannot be earlier than start date", Toast.LENGTH_SHORT).show();
                     return;
@@ -202,9 +214,11 @@ public class AddTaskActivity extends AppCompatActivity {
                 return;
             }
 
-            // If everything is valid → upload
+            // If everything is valid then :
+            // Create Task Object
             Tasks task = new Tasks(taskTitle, description, group, startDate, endDate);
 
+            // Upload to Firestore Database
             FireStoreHelper.getInstance().addTask(task, new FireStoreHelper.FirestoreCallback<Void>() {
                 @Override
                 public void onSuccess(Void result) {
@@ -214,15 +228,14 @@ public class AddTaskActivity extends AppCompatActivity {
 
                 @Override
                 public void onError(Exception e) {
-                    Toast.makeText( AddTaskActivity.this, "Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(AddTaskActivity.this, "Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             });
 
         });
-
-
-
     }
+
+    // Helper Method: Normalizes a Date object to midnight (00:00:00) to allow for accurate date-only comparisons.
     private Date stripTime(Date date) {
         Calendar c = Calendar.getInstance();
         c.setTime(date);

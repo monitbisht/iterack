@@ -16,10 +16,14 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.work.Data;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.util.concurrent.TimeUnit;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -28,6 +32,7 @@ public class MainActivity extends AppCompatActivity {
     FrameLayout frame;
     FloatingActionButton fab;
 
+    // App Lock State Tracking
     private boolean shouldShowLock = true;
     private static final int REQ_UNLOCK = 100;
 
@@ -41,31 +46,33 @@ public class MainActivity extends AppCompatActivity {
         frame = findViewById(R.id.frame_layout);
         fab = findViewById(R.id.fab_view);
 
-        // ASK FOR PERMISSION (Android 13+)
+        // Permission Logic: Explicitly ask for Notification permission on Android 13+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
                     != PackageManager.PERMISSION_GRANTED) {
 
-                // Show the popup asking "Allow Iterack to send notifications?"
+                // Show system dialog
                 ActivityCompat.requestPermissions(this,
                         new String[]{Manifest.permission.POST_NOTIFICATIONS}, 101);
             }
         }
-        // TRACK USER ACTIVITY
+
+        // Track "Last Seen" for inactivity calculations
         SharedPreferences userStats = getSharedPreferences("USER_STATS", MODE_PRIVATE);
         userStats.edit().putLong("LAST_SEEN", System.currentTimeMillis()).apply();
 
-        // CHECK SETTINGS BEFORE SCHEDULING
+        // Check settings before scheduling background reminders
         SharedPreferences settings = getSharedPreferences("USER_SETTINGS", MODE_PRIVATE);
         boolean areNotificationsEnabled = settings.getBoolean("notifications_enabled", true);
 
         String uid = com.google.firebase.auth.FirebaseAuth.getInstance().getUid();
 
-        // Only schedule if User is Logged In AND Notifications are Enabled
+        // Only schedule WorkManager tasks if User is Logged In AND Notifications are Enabled
         if (uid != null && areNotificationsEnabled) {
             NotificationScheduler.scheduleAll(getApplicationContext());
         }
 
+        // Switch fragments based on bottom tab selection
         navigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -87,35 +94,43 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        // Default Fragment
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.frame_layout, new HomeFragment())
                 .commit();
 
+        // Floating Action Button (Opens the "Add Task" screen)
         fab.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, AddTaskActivity.class);
             startActivity(intent);
             overridePendingTransition(R.anim.enter_animation, R.anim.exit_animation);
         });
-
-
     }
 
+    // Called every time the app comes to the foreground
     @Override
     protected void onResume() {
         super.onResume();
 
-        // check per-user app lock preferences; if enabled -> launch AppLockActivity
+        // If App Lock is enabled, show the Lock Screen
         String uid = com.google.firebase.auth.FirebaseAuth.getInstance().getUid();
         String prefName = (uid == null) ? "APP_LOCK_PREFS_global" : "APP_LOCK_PREFS_" + uid;
-        SharedPreferences prefs = getSharedPreferences(prefName, MODE_PRIVATE);
-        boolean lockEnabled = prefs.getBoolean("enabled", false);
+        SharedPreferences lockPrefs = getSharedPreferences(prefName, MODE_PRIVATE);
+        boolean lockEnabled = lockPrefs.getBoolean("enabled", false);
 
         if (lockEnabled && shouldShowLock) {
             Intent i = new Intent(this, AppLockActivity.class);
             startActivityForResult(i, REQ_UNLOCK);
-            // don't change shouldShowLock here; onActivityResult we will handle.
         }
         shouldShowLock = true;
+
+        // 2. Notification "Wake Up" Nudge (NEW ADDITION)
+        SharedPreferences prefs = getSharedPreferences("USER_SETTINGS", MODE_PRIVATE);
+        boolean notificationsEnabled = prefs.getBoolean("notifications_enabled", true);
+
+        if (notificationsEnabled) {
+            checkAndTriggerNudge();
+        }
     }
 
     @Override
@@ -130,13 +145,40 @@ public class MainActivity extends AppCompatActivity {
         shouldShowLock = true;
     }
 
+    // Handle return from Lock Screen
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        // If AppLockActivity returns RESULT_OK, don't immediately relaunch it
         super.onActivityResult(requestCode, resultCode, data);
+        // If unlock was successful, prevent locking again immediately
         if (requestCode == REQ_UNLOCK && resultCode == RESULT_OK) {
             shouldShowLock = false;
         }
     }
 
+    // Helper: Checks cooldown and fires nudge if allowed
+    private void checkAndTriggerNudge() {
+        SharedPreferences prefs = getSharedPreferences("ITERACK_PREFS", MODE_PRIVATE);
+        long lastNudge = prefs.getLong("last_nudge_time", 0);
+        long now = System.currentTimeMillis();
+
+        // Cooldown: 6 Hours
+        if (now - lastNudge > TimeUnit.HOURS.toMillis(6)) {
+            triggerNotificationNudge();
+            prefs.edit().putLong("last_nudge_time", now).apply();
+        }
+    }
+
+    // Helper: Enqueues the actual worker
+    private void triggerNotificationNudge() {
+        OneTimeWorkRequest nudge =
+                new OneTimeWorkRequest.Builder(TaskReminderWorker.class)
+                        .setInputData(
+                                new Data.Builder()
+                                        .putString("TYPE", "NUDGE")
+                                        .build()
+                        )
+                        .build();
+
+        WorkManager.getInstance(this).enqueue(nudge);
+    }
 }

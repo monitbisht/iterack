@@ -8,7 +8,6 @@ import android.widget.ImageView;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.android.material.button.MaterialButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.ncorti.slidetoact.SlideToActView;
@@ -16,7 +15,6 @@ import com.ncorti.slidetoact.SlideToActView;
 public class SplashActivity extends AppCompatActivity {
 
     private FirebaseAuth firebaseAuth;
-
     private ImageView appLogo;
     private SlideToActView getStartedButton;
 
@@ -28,36 +26,30 @@ public class SplashActivity extends AppCompatActivity {
         appLogo = findViewById(R.id.appLogo);
         getStartedButton = findViewById(R.id.get_started_button);
 
-        // Initialize Firebase Auth
         firebaseAuth = FirebaseAuth.getInstance();
 
-        //Shared Preference Set Up
+        // Check if this is the very first app launch
         SharedPreferences prefs = getSharedPreferences("ITERACK_PREFS", MODE_PRIVATE);
         boolean isFirstLaunch = prefs.getBoolean("is_first_launch", true);
 
 
-
         if (isFirstLaunch){
-
-            // Show Intro Animation
+            // Show special intro for first app launch
             playFirstLaunchAnimation();
 
-            // Set up the button click listener
             getStartedButton.setOnSlideCompleteListener(v -> {
-
-                // Mark that app has now been launched once
                 prefs.edit().putBoolean("is_first_launch", false).apply();
 
-                // Start the LoginActivity
                 startActivity(new Intent(SplashActivity.this, LoginActivity.class));
                 overridePendingTransition(R.anim.enter_animation, R.anim.exit_animation);
-                finish();  //Finish the SplashActivity
+                finish();
             });
 
         }else{
-            // Show Regular Animation
+            // Show standard loading animation
             playRegularAnimation();
 
+            // Auto-redirect based on login status
             new android.os.Handler(getMainLooper()).postDelayed(() -> {
                 if (isUserLoggedIn()) {
                     startActivity(new Intent(this, MainActivity.class));
@@ -69,38 +61,33 @@ public class SplashActivity extends AppCompatActivity {
                 finish();
             }, 1200);
         }
-
     }
 
+    // Animation for first-time users (Slide Up + Fade In)
     private void playFirstLaunchAnimation(){
-        // Set the initial state (Hide the button completely first)
-        getStartedButton.setAlpha(0f); // Fully transparent
+        getStartedButton.setAlpha(0f);
         getStartedButton.setTranslationY(30f);
         getStartedButton.setVisibility(View.VISIBLE);
 
-        // Animate the Logo (Slide UP)
         appLogo.animate()
-                .translationY(-200f)  // Move up by 200 pixels
-                .setDuration(1000)    // Animation takes 1 second
-                .setStartDelay(500);  // Wait 0.5s before starting
+                .translationY(-200f)
+                .setDuration(1000)
+                .setStartDelay(500);
 
-
-        // Animate the Button (Fade IN)
         getStartedButton.animate()
-                .alpha(1f)// Fade to fully opaque
-                .setDuration(1000)    // Animation takes 1 second
-                .setStartDelay(1200)  // Wait 1.2s (starts slightly after logo moves)
+                .alpha(1f)
+                .setDuration(1000)
+                .setStartDelay(1200)
                 .start();
     }
 
+    // Animation for returning users (Pulse effect)
     private void playRegularAnimation(){
-
         appLogo.animate()
-                .scaleX(1.1f).scaleY(1.1f) // Grow slightly (10%)
+                .scaleX(1.1f).scaleY(1.1f)
                 .setDuration(700)
                 .setStartDelay(200)
                 .withEndAction(() -> {
-                    // Shrink back to normal (Bouncing effect)
                     appLogo.animate()
                             .scaleX(1f)
                             .scaleY(1f)
@@ -109,15 +96,9 @@ public class SplashActivity extends AppCompatActivity {
                 });
     }
 
+    // Checks current Firebase Auth state
     private boolean isUserLoggedIn(){
-        //From the Firebase documentation: getCurrentUser() returns the currently signed-in FirebaseUser, or null if no user is signed in.
         FirebaseUser user = firebaseAuth.getCurrentUser();
-
-        // Check if user is signed in (non-null) and update UI accordingly.
-        if (user != null)
-            return true;
-        else
-            return false;
-
+        return user != null;
     }
 }

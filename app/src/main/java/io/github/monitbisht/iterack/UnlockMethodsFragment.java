@@ -33,6 +33,7 @@ public class UnlockMethodsFragment extends Fragment {
         switchDevicePasscode = view.findViewById(R.id.switchDevicePasscode);
         saveButton = view.findViewById(R.id.save_unlock_prefs_button);
 
+        // Verify device capabilities before showing options
         checkHardware();
 
         return view;
@@ -45,6 +46,7 @@ public class UnlockMethodsFragment extends Fragment {
         saveButton.setOnClickListener(v -> savePreferences());
     }
 
+    // Checks if the device actually has fingerprint/face hardware
     private void checkHardware() {
         BiometricManager manager = BiometricManager.from(requireContext());
         int result = manager.canAuthenticate(
@@ -52,6 +54,7 @@ public class UnlockMethodsFragment extends Fragment {
                         BiometricManager.Authenticators.DEVICE_CREDENTIAL
         );
 
+        // Disable biometric switch if hardware is missing or unavailable
         if (result == BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE ||
                 result == BiometricManager.BIOMETRIC_ERROR_HW_UNAVAILABLE) {
             switchBiometric.setEnabled(false);
@@ -59,11 +62,13 @@ public class UnlockMethodsFragment extends Fragment {
         }
     }
 
+    // Saves user choices and enables the lock
     private void savePreferences() {
 
         boolean useBio = switchBiometric.isChecked();
         boolean useDevice = switchDevicePasscode.isChecked();
 
+        // Validation: Must select at least one method
         if (!useBio && !useDevice) {
             Toast.makeText(requireContext(), "Select at least one unlock method", Toast.LENGTH_SHORT).show();
             return;
@@ -75,13 +80,13 @@ public class UnlockMethodsFragment extends Fragment {
         lockManager.setBiometrics(useBio);
         lockManager.setDeviceCredential(useDevice);
 
-        // Mark first-time done and enable app lock
+        // Mark setup as complete so this screen doesn't show again automatically
         lockManager.setFirstTimeDone();
         lockManager.setEnabled(true);
 
         Toast.makeText(requireContext(), "Unlock methods saved", Toast.LENGTH_SHORT).show();
 
-        // Return to Profile (fresh instance reads updated prefs)
+        // Return to Profile screen to show updated state
         requireActivity().getSupportFragmentManager()
                 .beginTransaction()
                 .replace(R.id.frame_layout, new ProfileFragment())

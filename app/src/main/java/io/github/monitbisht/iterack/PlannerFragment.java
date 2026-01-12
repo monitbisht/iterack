@@ -22,16 +22,15 @@
     import java.util.Calendar;
     import java.util.Date;
 
+
     public class PlannerFragment extends Fragment {
 
         private RecyclerView recyclerView;
         private Chip filterChip;
         private TextView noTasksText;
-
         private CalendarView calendarView;
 
         private Date selectedDate = new Date();
-
         private ArrayList<Tasks> allTasks = new ArrayList<>();
         private TasksAdapter tasksAdapter;
 
@@ -59,16 +58,13 @@
             filterChip = view.findViewById(R.id.filterChip);
             noTasksText = view.findViewById(R.id.noTasksText);
             calendarView = view.findViewById(R.id.calendar  );
-
             selectedDate = stripTime(new Date());
             setupCalendar();
             setupFilterMenu();
             loadTasks();
-
-
-
         }
 
+        // Updates the selected date when user clicks the calendar UI
         private void setupCalendar() {
             calendarView.setOnCalendarDayClickListener(new OnCalendarDayClickListener() {
                 @Override
@@ -76,28 +72,27 @@
                     Calendar clicked = calendarDay.getCalendar();
                     selectedDate = clicked.getTime();
 
+                    // Re-apply current filter for the new date
                     applyFilter(filterChip.getText().toString());
                 }
 
             });
         }
 
-            // Filter Chip Popup Menu (UI)
-
+        // Pop-up menu for filtering tasks (Active, Missed, etc.)
         private void setupFilterMenu() {
             filterChip.setOnClickListener(v -> {
 
                 PopupMenu popup = new PopupMenu(getContext(), v);
-
                 Date today = stripTime(new Date());
 
+                // Add standard filters
                 popup.getMenu().add("All");
                 popup.getMenu().add("Active");
                 popup.getMenu().add("Missed");
                 popup.getMenu().add("Completed");
 
-
-                // Only visible when selected date >= today
+                // Only show future-related filters if selected date is today or later
                 if (!selectedDate.before(today)) {
                     popup.getMenu().add("Upcoming");
                     popup.getMenu().add("New");
@@ -116,23 +111,22 @@
         }
 
 
-
-        //  Load tasks from Firestore
-
+        // Fetches all tasks from Firestore once, then filters locally
         private void loadTasks() {
 
             FireStoreHelper.getInstance().getAllTasks(new FireStoreHelper.FirestoreCallback<ArrayList<Tasks>>() {
                 @Override
                 public void onSuccess(ArrayList<Tasks> taskList) {
 
-                    allTasks = taskList; // store all tasks locally
+                    allTasks = taskList; // Store for local filtering
 
-                    // Update status before showing
+                    // Ensure status is up-to-date
                     Date today = new Date();
                     for (Tasks t : allTasks) {
                         t.updateStatus(today);
                     }
 
+                    // Handle Empty State
                     if (taskList.isEmpty()) {
                         noTasksText.setVisibility(View.VISIBLE);
                         recyclerView.setVisibility(View.GONE);
@@ -144,6 +138,7 @@
                         recyclerView.setAdapter(tasksAdapter);
                     }
 
+                    // Apply default filter
                     applyFilter(filterChip.getText().toString());
                 }
 
@@ -155,8 +150,7 @@
         }
 
 
-        // Apply Filters
-
+        // Core filtering engine (Compares Task Dates vs Selected Date)
         private void applyFilter(String filterType) {
 
             if (selectedDate == null) {
@@ -173,13 +167,13 @@
                 Date created = t.getCreatedOn() != null ? stripTime(t.getCreatedOn()) : null;
                 Date today = stripTime(new Date());
 
-
+                // Check if selected date falls within task duration
                 boolean inRange = !selectedDate.before(start) && !selectedDate.after(end);
                 boolean isMissed = selectedDate.after(end);
                 boolean isCompleted = t.isCompleted();
                 boolean isMissedOnSelectedDate = isMissed && isCreatedOnDate(t, selectedDate);
 
-
+                // Filter Switch Case
                 switch (filterType) {
 
                     case "New":
@@ -215,13 +209,14 @@
                             filtered.add(t);
                         break;
 
-                    default:    // All
+                    default:    // "All" case
                         if (inRange)
                             filtered.add(t);
                         break;
                 }
             }
 
+            // Update UI
             tasksAdapter = new TasksAdapter(getContext(), filtered);
             recyclerView.setAdapter(tasksAdapter);
 
@@ -229,15 +224,12 @@
         }
 
 
-        // Helper: Check if a task was created today
-
+        // Helper: Check if a task was created on a specific date
         private boolean isCreatedOnDate(Tasks t, Date date) {
-
             if (t.getCreatedOn() == null) return false;
 
             Calendar c1 = Calendar.getInstance();
             Calendar c2 = Calendar.getInstance();
-
             c1.setTime(t.getCreatedOn());
             c2.setTime(date);
 
@@ -245,6 +237,7 @@
                     && c1.get(Calendar.DAY_OF_YEAR) == c2.get(Calendar.DAY_OF_YEAR);
         }
 
+        // Helper: Normalize date to midnight
         private Date stripTime(Date date) {
             Calendar c = Calendar.getInstance();
             c.setTime(date);
@@ -254,6 +247,4 @@
             c.set(Calendar.MILLISECOND, 0);
             return c.getTime();
         }
-
-
     }

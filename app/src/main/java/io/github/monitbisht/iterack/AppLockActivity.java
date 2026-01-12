@@ -22,7 +22,7 @@ public class AppLockActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Transparent black background while system dialog is shown
+        // Transparent black background
         View view = new View(this);
         view.setBackgroundColor(getColor(android.R.color.black));
         setContentView(view);
@@ -31,22 +31,14 @@ public class AppLockActivity extends AppCompatActivity {
         authenticate();
     }
 
-    private void loadPreferences() {
-        String uid = FirebaseAuth.getInstance().getUid();
-        String prefName = (uid == null) ? "APP_LOCK_PREFS_global" : "APP_LOCK_PREFS_" + uid;
-        SharedPreferences prefs = getSharedPreferences(prefName, MODE_PRIVATE);
-
-        allowBiometric = prefs.getBoolean("biometric_enabled", false);
-        allowDeviceCredential = prefs.getBoolean("device_credential_enabled", false);
-    }
-
+    // Main Logic: Triggers the system Biometric/PIN prompt
     private void authenticate() {
         int allowedAuth = 0;
         if (allowBiometric) allowedAuth |= BiometricManager.Authenticators.BIOMETRIC_STRONG;
         if (allowDeviceCredential) allowedAuth |= BiometricManager.Authenticators.DEVICE_CREDENTIAL;
 
         if (allowedAuth == 0) {
-            // nothing allowed
+            // No security method enabled, close lock screen immediately
             finish();
             return;
         }
@@ -59,6 +51,7 @@ public class AppLockActivity extends AppCompatActivity {
 
         Executor executor = getMainExecutor();
 
+        // Handle Auth Callbacks
         BiometricPrompt biometricPrompt = new BiometricPrompt(this, executor,
                 new BiometricPrompt.AuthenticationCallback() {
 
@@ -69,12 +62,13 @@ public class AppLockActivity extends AppCompatActivity {
 
                     @Override
                     public void onAuthenticationFailed() {
-                        // stay on screen
+                        // Auth failed but user can retry, so we stay on screen
                     }
 
                     @Override
                     public void onAuthenticationError(int errorCode, @NonNull CharSequence errString) {
 
+                        // If user cancels biometric but PIN is allowed, treat as success (system handles fallback)
                         if (allowDeviceCredential &&
                                 (errorCode == BiometricPrompt.ERROR_USER_CANCELED ||
                                         errorCode == BiometricPrompt.ERROR_CANCELED)) {
@@ -82,7 +76,7 @@ public class AppLockActivity extends AppCompatActivity {
                             return;
                         }
 
-                        // If user cancelled or negative button, finish (stay locked)
+                        // If user completely cancels or clicks negative button -> Close App (Stay Locked)
                         if (errorCode == BiometricPrompt.ERROR_NEGATIVE_BUTTON ||
                                 errorCode == BiometricPrompt.ERROR_USER_CANCELED ||
                                 errorCode == BiometricPrompt.ERROR_CANCELED) {
@@ -94,13 +88,26 @@ public class AppLockActivity extends AppCompatActivity {
         biometricPrompt.authenticate(promptInfo);
     }
 
+    // Helper: Loads user-specific security settings (Biometric vs PIN)
+    private void loadPreferences() {
+        String uid = FirebaseAuth.getInstance().getUid();
+        // Use unique preference file per user so settings don't mix
+        String prefName = (uid == null) ? "APP_LOCK_PREFS_global" : "APP_LOCK_PREFS_" + uid;
+        SharedPreferences prefs = getSharedPreferences(prefName, MODE_PRIVATE);
+
+        allowBiometric = prefs.getBoolean("biometric_enabled", false);
+        allowDeviceCredential = prefs.getBoolean("device_credential_enabled", false);
+    }
+
+    // Helper: Unlock the app and return OK result
     private void unlockSuccess() {
         setResult(RESULT_OK);
         finish();
     }
 
+    // Prevent leaving the lock screen
     @Override
     public void onBackPressed() {
-        // Prevent leaving the lock screen
+        // Do nothing
     }
 }

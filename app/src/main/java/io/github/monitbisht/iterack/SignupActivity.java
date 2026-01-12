@@ -50,16 +50,13 @@ import java.util.Map;
 public class SignupActivity extends AppCompatActivity {
 
     private TextInputEditText username, signupEmail, signupPassword, signupConfirmPassword;
-
     private TextInputLayout  signUpPasswordLayout, signUpConfirmPasswordLayout;
-
     private AppCompatButton signupBtn;
     private LinearLayout googleSignUpButton;
     private TextView goToLogin;
 
     private FirebaseAuth auth;
     private FirebaseFirestore db;
-
 
 
     @Override
@@ -76,77 +73,63 @@ public class SignupActivity extends AppCompatActivity {
         goToLogin = findViewById(R.id.tvGoToLogin);
         signUpPasswordLayout = findViewById(R.id.signup_password_layout);
         signUpConfirmPasswordLayout = findViewById(R.id.signup_confirm_password_layout);
+
         auth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
 
 
-        // Automatically show the eye icon of Password input field again when user types
+        // TextWatcher: Resets error state and icon on user input
         signupPassword.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-                // Remove error immediately when user starts typing
                 signUpPasswordLayout.setError(null);
-
-                // Restore the eye icon
                 signUpPasswordLayout.setEndIconMode(TextInputLayout.END_ICON_PASSWORD_TOGGLE);
             }
-
             @Override
             public void afterTextChanged(Editable s) {}
         });
 
-        // Automatically show the eye icon of Password input field again when user types
         signupConfirmPassword.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-                // Remove error immediately when user starts typing
                 signUpConfirmPasswordLayout.setError(null);
-
-                // Restore the eye icon
                 signUpConfirmPasswordLayout.setEndIconMode(TextInputLayout.END_ICON_PASSWORD_TOGGLE);
             }
-
             @Override
             public void afterTextChanged(Editable s) {}
         });
 
-        //Navigation to Login Page
+        // Navigation Redirects
         goToLogin.setOnClickListener(v -> {
             startActivity(new Intent(SignupActivity.this, LoginActivity.class));
         });
 
-        //Navigation to Home Page after SignUp
         signupBtn.setOnClickListener(v -> {
             signupUser();
         });
 
-        //Navigation to Login Page after Google SignUp
         googleSignUpButton.setOnClickListener(v -> {
-          googleSignIn();
+            googleSignIn();
         });
 
     }
+
+    // Initiates the Google Sign-In request via Credential Manager
     public void googleSignIn() {
-        // Instantiate a Google sign-in request
         GetGoogleIdOption googleIdOption = new GetGoogleIdOption.Builder()
                 .setFilterByAuthorizedAccounts(false)
                 .setServerClientId(getBaseContext().getString(R.string.default_web_client_id))
                 .build();
 
-        // Create the Credential Manager request
         GetCredentialRequest request = new GetCredentialRequest.Builder()
                 .addCredentialOption(googleIdOption)
                 .build();
-
-        // Ask Credential Manager to retrieve Google credentials
 
         CredentialManager credentialManager = CredentialManager.create(SignupActivity.this);
 
@@ -171,16 +154,14 @@ public class SignupActivity extends AppCompatActivity {
         );
     }
 
+    // Extracts token from Google Credential and passes to Firebase
     private void handleSignIn(Credential credential) {
 
         if (credential instanceof CustomCredential) {
-
             CustomCredential customCredential = (CustomCredential) credential;
 
             if (customCredential.getType().equals(TYPE_GOOGLE_ID_TOKEN_CREDENTIAL)) {
-
                 Bundle credentialData = customCredential.getData();
-
                 GoogleIdTokenCredential googleIdTokenCredential =
                         GoogleIdTokenCredential.createFrom(credentialData);
 
@@ -188,22 +169,18 @@ public class SignupActivity extends AppCompatActivity {
                 return;
             }
         }
-
         Log.w(TAG, "Credential is not of type Google ID!");
     }
 
-
+    // Authenticates with Firebase using the Google Token
     private void firebaseAuthWithGoogle(String idToken) {
         AuthCredential credential = GoogleAuthProvider.getCredential(idToken, null);
 
         auth.signInWithCredential(credential)
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
-
                         FirebaseUser user = auth.getCurrentUser();
-
-                        boolean isNewUser =
-                                task.getResult().getAdditionalUserInfo().isNewUser();
+                        boolean isNewUser = task.getResult().getAdditionalUserInfo().isNewUser();
 
                         if (isNewUser) {
                             saveGoogleUserToFirestore(user);
@@ -218,8 +195,8 @@ public class SignupActivity extends AppCompatActivity {
                 });
     }
 
+    // Stores Google profile data in Firestore for new users
     private void saveGoogleUserToFirestore(FirebaseUser user) {
-
         Map<String, Object> data = new HashMap<>();
         data.put("name", user.getDisplayName());
         data.put("email", user.getEmail());
@@ -234,13 +211,14 @@ public class SignupActivity extends AppCompatActivity {
     }
 
 
-
+    // Standard Email/Password Registration
     private void signupUser() {
         String name = username.getText().toString().trim();
         String email = signupEmail.getText().toString().trim();
         String password = signupPassword.getText().toString().trim();
         String confirmPassword = signupConfirmPassword.getText().toString().trim();
 
+        // Validation Checks
         if (name.isEmpty()) {
             username.setError("Username is required");
             username.requestFocus();
@@ -288,47 +266,44 @@ public class SignupActivity extends AppCompatActivity {
             return;
         }
 
-        signupBtn.setEnabled(false);
+        signupBtn.setEnabled(false); // Prevent double clicks
 
+        // Firebase Creation
         auth.createUserWithEmailAndPassword(email,password).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
 
                 if (task.isSuccessful()) {
-                    // Sign Up Success , switch to Main Activity
-
                     Log.d("TAG", "signUp:success");
                     FirebaseUser user = auth.getCurrentUser();
                     if (user == null) return;
 
+                    String uid = user.getUid();
 
-                            String uid = user.getUid();
-
-                            // FireStore user data
-                            Map<String, Object> userData = new HashMap<>();
-                            userData.put("name", name);
-                            userData.put("email", email);
-                            userData.put("createdAt", FieldValue.serverTimestamp());
-                            userData.put("photoUrl", user.getPhotoUrl() != null ? user.getPhotoUrl().toString() : null);
+                    // Prepare User Data
+                    Map<String, Object> userData = new HashMap<>();
+                    userData.put("name", name);
+                    userData.put("email", email);
+                    userData.put("createdAt", FieldValue.serverTimestamp());
+                    userData.put("photoUrl", user.getPhotoUrl() != null ? user.getPhotoUrl().toString() : null);
 
 
                     // Save to Firestore
-                            db.collection("users").document(uid)
-                                    .set(userData)
-                                    .addOnSuccessListener(aVoid -> {
-                                        Snackbar snackbar = Snackbar.make(findViewById(android.R.id.content), "Sign up successful", Snackbar.LENGTH_LONG);
+                    db.collection("users").document(uid)
+                            .set(userData)
+                            .addOnSuccessListener(aVoid -> {
+                                Snackbar snackbar = Snackbar.make(findViewById(android.R.id.content), "Sign up successful", Snackbar.LENGTH_LONG);
 
-                                        // Move to MainActivity
-                                        startActivity(new Intent(SignupActivity.this, MainActivity.class));
-                                        finish();
-                                    })
-                                    .addOnFailureListener(e -> {
-                                        Snackbar snackbar = Snackbar.make(findViewById(android.R.id.content), "Sign up failed", Snackbar.LENGTH_LONG);
-                                        signupBtn.setEnabled(true);
-                                    });
-                        }
-                    else {
-                    // If sign up fails , display a message to the user
+                                startActivity(new Intent(SignupActivity.this, MainActivity.class));
+                                finish();
+                            })
+                            .addOnFailureListener(e -> {
+                                Snackbar snackbar = Snackbar.make(findViewById(android.R.id.content), "Sign up failed", Snackbar.LENGTH_LONG);
+                                signupBtn.setEnabled(true);
+                            });
+                }
+                else {
+                    // Error Handling
                     Log.w("TAG", "signInWithEmail:failure", task.getException());
                     String message = "Login failed. Please try again.";
 
@@ -338,19 +313,21 @@ public class SignupActivity extends AppCompatActivity {
                         message = "Something went wrong. Try again.";
                     }
                     Snackbar snackbar = Snackbar.make(findViewById(android.R.id.content), message, Snackbar.LENGTH_LONG);
-                    snackbar.show();                    signupBtn.setEnabled(true);
+                    snackbar.show();
+                    signupBtn.setEnabled(true);
                 }
-
             }
         });
+    }
 
-        }
+    // Helper: Validates Email Format
     boolean isValidEmail(String email) {
         return email != null && android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches();
     }
+
+    // Helper: Validates Password Complexity
     boolean isValidPassword(String password) {
         String passwordRegex = "^(?=.*[0-9])(?=.*[@#$%^&+=!]).{6,}$";
         return password != null && password.matches(passwordRegex);
     }
-
 }

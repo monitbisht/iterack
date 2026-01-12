@@ -27,25 +27,21 @@ import com.google.firebase.auth.FirebaseUser;
 public class ChangePasswordFragment extends Fragment {
 
     private TextInputEditText currentPasswordTextInput, newPasswordTextInput, confirmPasswordTextInput;
-
     private TextInputLayout currentPasswordLayout, newPasswordLayout, confirmPasswordLayout;
-
     private AppCompatButton updatePasswordButton;
     private OnBackPressedCallback backCallback;
-
-
 
     public ChangePasswordFragment() {
         // Required empty public constructor
     }
 
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
+
         View view = inflater.inflate(R.layout.fragment_change_password, container, false);
 
+        // Bind UI elements
         currentPasswordTextInput = view.findViewById(R.id.et_current_password);
         newPasswordTextInput = view.findViewById(R.id.et_new_password);
         confirmPasswordTextInput = view.findViewById(R.id.et_confirm_password);
@@ -63,80 +59,59 @@ public class ChangePasswordFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-            backCallback = new OnBackPressedCallback(false) {
+        // Initialize Back Press Callback (Initially disabled)
+        backCallback = new OnBackPressedCallback(false) {
             @Override
             public void handleOnBackPressed() {
-                // Do nothing while disabled
+                // Do nothing while disabled (prevents exit during loading)
             }
         };
         requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(), backCallback);
 
+        // Text Watchers: Clear errors and restore password toggle icon when user types
         currentPasswordTextInput.addTextChangedListener(new TextWatcher(){
-
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                // Remove error immediately when user starts typing
                 currentPasswordTextInput.setError(null);
-
-                // Restore the eye icon
                 currentPasswordLayout.setEndIconMode(TextInputLayout.END_ICON_PASSWORD_TOGGLE);
-
             }
-
-            @Override
-            public void afterTextChanged(Editable s) {}
+            @Override public void afterTextChanged(Editable s) {}
         });
 
         newPasswordTextInput.addTextChangedListener(new TextWatcher(){
-
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                // Remove error immediately when user starts typing
                 newPasswordTextInput.setError(null);
-
-                // Restore the eye icon
                 newPasswordLayout.setEndIconMode(TextInputLayout.END_ICON_PASSWORD_TOGGLE);
-
             }
-
-            @Override
-            public void afterTextChanged(Editable s) {}
+            @Override public void afterTextChanged(Editable s) {}
         });
 
         confirmPasswordTextInput.addTextChangedListener(new TextWatcher(){
-
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                // Remove error immediately when user starts typing
                 confirmPasswordTextInput.setError(null);
-
-                // Restore the eye icon
                 confirmPasswordLayout.setEndIconMode(TextInputLayout.END_ICON_PASSWORD_TOGGLE);
-
             }
-            @Override
-            public void afterTextChanged(Editable s) {}
+            @Override public void afterTextChanged(Editable s) {}
         });
 
+        // Update Button Click Listener
         updatePasswordButton.setOnClickListener(v -> {
             updatePassword();
         });
     }
 
+    // Main Logic: Validates input and calls Firebase to change password
     private void updatePassword() {
         String currentPassword = currentPasswordTextInput.getText().toString().trim();
         String newPassword = newPasswordTextInput.getText().toString().trim();
         String confirmPassword = confirmPasswordTextInput.getText().toString().trim();
 
+        // Validation: Check for empty fields and complexity requirements
         if (currentPassword.isEmpty()) {
             currentPasswordTextInput.setError("Password is required");
             currentPasswordTextInput.requestFocus();
@@ -175,6 +150,7 @@ public class ChangePasswordFragment extends Fragment {
             confirmPasswordLayout.setEndIconMode(TextInputLayout.END_ICON_PASSWORD_TOGGLE);
         }
 
+        // Logic Check: Passwords must match
         if (!newPassword.equals(confirmPassword)) {
             confirmPasswordTextInput.setError("Password does not match");
             confirmPasswordTextInput.requestFocus();
@@ -182,6 +158,7 @@ public class ChangePasswordFragment extends Fragment {
             return;
         }
 
+        // Logic Check: New password cannot be the same as old
         if (currentPassword.equals(newPassword)) {
             newPasswordTextInput.setError("New password must be different from current password");
             newPasswordTextInput.requestFocus();
@@ -190,9 +167,9 @@ public class ChangePasswordFragment extends Fragment {
         }
 
 
-        showLoadingState(); // Start loading animation
+        showLoadingState(); // Disable inputs & button
 
-        // Disable back + UI during process
+        // Disable back navigation while loading
         backCallback.setEnabled(true);
         updatePasswordButton.setEnabled(false);
         currentPasswordTextInput.setEnabled(false);
@@ -203,7 +180,7 @@ public class ChangePasswordFragment extends Fragment {
 
         if (user == null) {
             hideLoadingState();
-            backCallback.setEnabled(false); // Re-enable back
+            backCallback.setEnabled(false);
             Snackbar.make(requireView(), "User authentication failed", Snackbar.LENGTH_LONG).show();
             return;
         }
@@ -211,17 +188,19 @@ public class ChangePasswordFragment extends Fragment {
         String userEmail = user.getEmail();
         if (userEmail == null) {
             hideLoadingState();
-            backCallback.setEnabled(false); // Re-enable back
+            backCallback.setEnabled(false);
             Snackbar.make(requireView(), "Cannot verify email. Try again later.", Snackbar.LENGTH_LONG).show();
             return;
         }
 
+        // Re-authenticate user before allowing sensitive change
         AuthCredential credential =
                 EmailAuthProvider.getCredential(userEmail, currentPassword);
 
         user.reauthenticate(credential)
                 .addOnSuccessListener(aVoid -> {
 
+                    // Authentication Success: Proceed to update password
                     user.updatePassword(newPassword)
                             .addOnSuccessListener(unused -> {
 
@@ -236,7 +215,7 @@ public class ChangePasswordFragment extends Fragment {
                                 // Re-enable back press BEFORE navigating
                                 backCallback.setEnabled(false);
 
-                                // Navigate safely
+                                // Delay navigation slightly for UX
                                 new Handler().postDelayed(() -> {
                                     requireActivity().getSupportFragmentManager()
                                             .beginTransaction()
@@ -246,9 +225,9 @@ public class ChangePasswordFragment extends Fragment {
 
                             })
                             .addOnFailureListener(e -> {
+                                // Update Failed (e.g., Weak Password, Server Error)
                                 hideLoadingState();
 
-                                // Re-enable UI + back
                                 backCallback.setEnabled(false);
                                 updatePasswordButton.setEnabled(true);
                                 currentPasswordTextInput.setEnabled(true);
@@ -262,9 +241,9 @@ public class ChangePasswordFragment extends Fragment {
 
                 })
                 .addOnFailureListener(e -> {
+                    // Re-authentication Failed (Wrong Current Password)
                     hideLoadingState();
 
-                    // Re-enable UI + back
                     backCallback.setEnabled(false);
                     updatePasswordButton.setEnabled(true);
                     currentPasswordTextInput.setEnabled(true);
@@ -277,26 +256,32 @@ public class ChangePasswordFragment extends Fragment {
                 });
 
     }
+
+    // Helper: Enforces Regex for password complexity
     boolean isValidPassword(String password) {
         String passwordRegex = "^(?=.*[0-9])(?=.*[@#$%^&+=!]).{6,}$";
         return password != null && password.matches(passwordRegex);
     }
+
+    // Helper: Updates UI to show loading
     private void showLoadingState() {
         updatePasswordButton.setEnabled(false);
         updatePasswordButton.setText("Updating...");
         updatePasswordButton.setAlpha(0.7f);
     }
 
+    // Helper: Reverts UI from loading state
     private void hideLoadingState() {
         updatePasswordButton.setEnabled(true);
         updatePasswordButton.setText("UPDATE PASSWORD");
         updatePasswordButton.setAlpha(1f);
     }
+
+    // Helper: Shows a styled green snackbar
     private void showSuccessBanner(View v, String message) {
         Snackbar snackbar = Snackbar.make(v, message, Snackbar.LENGTH_LONG);
         snackbar.setBackgroundTint(getResources().getColor(R.color.dark_emerald));
         snackbar.setTextColor(getResources().getColor(R.color.fresh_green));
         snackbar.show();
     }
-
 }

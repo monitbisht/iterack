@@ -21,17 +21,34 @@ public class TaskReminderWorker extends Worker {
     @Override
     public Result doWork() {
 
+        // Check user preferences for notifications and sound
         SharedPreferences prefs = getApplicationContext()
                 .getSharedPreferences("USER_SETTINGS", Context.MODE_PRIVATE);
 
         boolean areNotificationsEnabled = prefs.getBoolean("notifications_enabled", true);
-        boolean playSound = prefs.getBoolean("sound_enabled", true);   // ← NEW
+        boolean playSound = prefs.getBoolean("sound_enabled", true);
 
         if (!areNotificationsEnabled) return Result.success();
 
 
         String type = getInputData().getString("TYPE");
 
+        // One-time silent notification to confirm reminders are active
+
+        if ("NUDGE".equals(type)) {
+            // Sound to false for this specifically so it's not annoying on every open
+            NotificationHelper.showNotification(
+                    getApplicationContext(),
+                    null,
+                    "Welcome back 👋",
+                    "Task reminders are active",
+                    2001,
+                    false // Silent update
+            );
+            return Result.success();
+        }
+
+        // Fetch tasks synchronously to avoid race conditions
         ArrayList<Tasks> tasks;
         try {
             tasks = FireStoreHelper.getInstance().getAllTasksBlocking();
@@ -41,6 +58,7 @@ public class TaskReminderWorker extends Worker {
 
         if (type == null) return Result.success();
 
+        // Delegate to specific handler based on time of day
         switch (type) {
 
             case "MORNING":
@@ -72,8 +90,7 @@ public class TaskReminderWorker extends Worker {
     }
 
 
-
-    // NOTIFICATION HANDLERS (Every method now receives `playSound`)
+    // Handler: Generates "Morning Focus" notification (Starts vs Deadlines)
     private void handleMorning(ArrayList<Tasks> tasks, boolean playSound) {
 
         Date today = strip(new Date());
@@ -99,6 +116,7 @@ public class TaskReminderWorker extends Worker {
         );
     }
 
+    // Helper: Formats the morning message string
     @NonNull
     private static String getString(int starts, int deadlines) {
         String msg;
@@ -113,13 +131,13 @@ public class TaskReminderWorker extends Worker {
             msg = starts + " task(s) start today.";
         }
         else {
-            // This handles the case where only deadlines > 0
             msg = deadlines + " task(s) reach their deadline today.";
         }
 
         return msg;
     }
 
+    // Handler: Generates "Mid-Day Check" for pending tasks
     private void handleMidday(ArrayList<Tasks> tasks, boolean playSound) {
 
         Date today = strip(new Date());
@@ -147,6 +165,7 @@ public class TaskReminderWorker extends Worker {
         );
     }
 
+    // Handler: Generates "Evening Push" for remaining tasks
     private void handleEvening(ArrayList<Tasks> tasks, boolean playSound) {
 
         Date today = strip(new Date());
@@ -174,6 +193,7 @@ public class TaskReminderWorker extends Worker {
         );
     }
 
+    // Handler: Generates "Daily Summary" stats
     private void handleDailySummary(ArrayList<Tasks> tasks, boolean playSound) {
 
         Date today = strip(new Date());
@@ -212,6 +232,7 @@ public class TaskReminderWorker extends Worker {
         );
     }
 
+    // Handler: Alerts for overdue tasks
     private void handleOverdue(ArrayList<Tasks> tasks, boolean playSound) {
 
         Date today = strip(new Date());
@@ -237,6 +258,7 @@ public class TaskReminderWorker extends Worker {
         );
     }
 
+    // Handler: Re-engagement notification for inactive users
     private void showInactivityNotification(boolean playSound) {
         NotificationHelper.showNotification(
                 getApplicationContext(),
@@ -248,6 +270,7 @@ public class TaskReminderWorker extends Worker {
         );
     }
 
+    // Helper: Checks if user has been away for > 3 days
     private boolean isUserInactive() {
         SharedPreferences prefs = getApplicationContext()
                 .getSharedPreferences("USER_STATS", Context.MODE_PRIVATE);
@@ -260,7 +283,7 @@ public class TaskReminderWorker extends Worker {
         return (currentTime - lastSeen) > threeDays;
     }
 
-    // Utility
+    // Helper: Normalizes date to midnight
     private Date strip(Date d) {
         Calendar c = Calendar.getInstance();
         c.setTime(d);

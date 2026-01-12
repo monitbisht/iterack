@@ -14,11 +14,11 @@ public class NotificationHelper {
     public static final String CHANNEL_TASK_REMINDERS = "task_reminders";
     public static final String CHANNEL_DAILY_SUMMARY = "daily_summary";
 
-    // Create channels
 
-    // ----------------------------------------------------------
+
+
     // Show notification
-    // ----------------------------------------------------------
+
     public static void showNotification(Context context, String channelId,
                                         String title, String msg, int id , boolean soundOn) {
 

@@ -24,6 +24,7 @@ public class ResetDataManager {
         void onFailure(Exception e);
     }
 
+    // Orchestrates the reset process sequentially: Tasks -> Stats -> Local Cache
     public void resetAllData(ResetCallback callback) {
 
         if (uid == null) {
@@ -56,8 +57,7 @@ public class ResetDataManager {
     }
 
 
-    // Delete tasks subcollection
-
+    // Deletes all documents within the 'tasks' subcollection in Firestore
     private void deleteTasks(ResetCallback callback) {
 
         db.collection("users")
@@ -71,6 +71,7 @@ public class ResetDataManager {
                         return;
                     }
 
+                    // Batch delete ensures atomic operation
                     db.runBatch(batch -> {
                                 for (var doc : query.getDocuments()) {
                                     batch.delete(doc.getReference());
@@ -85,8 +86,7 @@ public class ResetDataManager {
 
 
 
-    // Delete weeklyStats subcollection
-
+    // Deletes all documents within the 'weeklyStats' subcollection in Firestore
     private void deleteWeeklyStats(ResetCallback callback) {
 
         db.collection("users")
@@ -113,10 +113,7 @@ public class ResetDataManager {
     }
 
 
-
-
-    // Clear SharedPreferences (cache, lock, insights)
-
+    // Wipes all local SharedPreferences files to remove cached data and settings
     private void clearLocalPreferences() {
 
         SharedPreferences prefs;

@@ -50,7 +50,6 @@ public class ProfileFragment extends Fragment {
     private TextView biometricTitle, deviceCredentialTitle;
 
     private AppLockManager lockManager;
-
     private MaterialButton logoutButton;
 
     public ProfileFragment() {  }
@@ -58,7 +57,6 @@ public class ProfileFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-
         View view = inflater.inflate(R.layout.fragment_profile, container, false);
 
         profileName = view.findViewById(R.id.profile_name_textView);
@@ -75,8 +73,7 @@ public class ProfileFragment extends Fragment {
         taskReminderSwitch = view.findViewById(R.id.task_reminder_switch);
         soundSwitch = view.findViewById(R.id.sound_switch);
 
-
-        // app-lock related views
+        // App Lock related views
         appLockRow = view.findViewById(R.id.appLockRow);
         appLockSwitch = view.findViewById(R.id.app_lock_toggle_button);
         biometricSwitch = view.findViewById(R.id.biometrics_toggle_button);
@@ -84,15 +81,14 @@ public class ProfileFragment extends Fragment {
 
         biometricIcon = view.findViewById(R.id.biometrics_icon);
         deviceIcon = view.findViewById(R.id.device_credential_icon);
-
         biometricTitle = view.findViewById(R.id.biometrics_title);
         deviceCredentialTitle = view.findViewById(R.id.device_credential_title);
 
-        // Per-user manager
+        // Initialize AppLock Manager (User specific)
         String uid = FirebaseAuth.getInstance().getUid();
         lockManager = new AppLockManager(requireContext(), uid);
 
-        // set initial UI
+        // Initialize UI state based on saved preferences
         boolean enabled = lockManager.isEnabled();
         appLockSwitch.setChecked(enabled);
         setUnlockMethodsVisibility(enabled);
@@ -107,28 +103,23 @@ public class ProfileFragment extends Fragment {
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // load other user data
         loadUserData();
         signOut();
+
+        // Listeners for click actions
         changePasswordText.setOnClickListener(passwordClickListener);
         changePasswordIcon.setOnClickListener(passwordClickListener);
         changePasswordArrow.setOnClickListener(passwordClickListener);
 
 
-
-        //Notification Switch
-
-        //Load the Saved State (Default to TRUE/ON)
+        // Notification Switch (Schedule/Cancel WorkManager)
         SharedPreferences prefs = requireContext().getSharedPreferences("USER_SETTINGS", Context.MODE_PRIVATE);
         boolean isEnabled = prefs.getBoolean("notifications_enabled", true);
         taskReminderSwitch.setChecked(isEnabled);
         boolean isSoundEnabled = prefs.getBoolean("sound_enabled", true);
         soundSwitch.setChecked(isSoundEnabled);
 
-
-        // Reminder Switch Listener
         taskReminderSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            // Save the new state immediately
             prefs.edit().putBoolean("notifications_enabled", isChecked).apply();
 
             if (isChecked) {
@@ -140,27 +131,27 @@ public class ProfileFragment extends Fragment {
             }
         });
 
-        // Sound Switch Listener
         soundSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
             prefs.edit().putBoolean("sound_enabled", isChecked).apply();
-
             String msg = isChecked ? "Sound & Vibration Enabled" : "Sound & Vibration Muted";
             Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show();
         });
 
-        // App lock main toggle - require authentication to enable/disable
 
+        // App Lock Main Toggle
+        // Requires authentication to change state
         appLockSwitch.setClickable(false);
 
         appLockRow.setOnClickListener(v -> {
             boolean enabled = lockManager.isEnabled();
 
             if (!enabled) {
+                // First time setup
                 if (lockManager.isFirstTime()) {
                     openSetupFlow();
                     return;
                 }
-
+                // Verify identity before enabling
                 authenticate(() -> {
                     lockManager.setEnabled(true);
                     setUnlockMethodsVisibility(true);
@@ -171,6 +162,7 @@ public class ProfileFragment extends Fragment {
                 });
 
             } else {
+                // Verify identity before disabling
                 authenticate(() -> {
                     lockManager.setEnabled(false);
                     setUnlockMethodsVisibility(false);
@@ -181,7 +173,7 @@ public class ProfileFragment extends Fragment {
             }
         });
 
-
+        // Biometric Toggle
         biometricSwitch.setOnClickListener(v -> {
             if (biometricSwitch.getVisibility() != View.VISIBLE) return;
 
@@ -189,13 +181,9 @@ public class ProfileFragment extends Fragment {
             boolean deviceEnabled = lockManager.deviceCredential();
             boolean newValue = !currentBiometric;
 
-            // Block turning OFF last method
+            // Prevent user from disabling all methods
             if (!newValue && !deviceEnabled) {
-                Toast.makeText(
-                        requireContext(),
-                        "At least one unlock method must be enabled",
-                        Toast.LENGTH_SHORT
-                ).show();
+                Toast.makeText(requireContext(), "At least one unlock method must be enabled", Toast.LENGTH_SHORT).show();
                 biometricSwitch.setChecked(true);
                 return;
             }
@@ -208,7 +196,7 @@ public class ProfileFragment extends Fragment {
             });
         });
 
-
+        // Device Credential (PIN/Pattern) Toggle
         deviceCredentialSwitch.setOnClickListener(v -> {
             if (deviceCredentialSwitch.getVisibility() != View.VISIBLE) return;
 
@@ -216,13 +204,8 @@ public class ProfileFragment extends Fragment {
             boolean biometricEnabled = lockManager.biometrics();
             boolean newValue = !currentDevice;
 
-            // Block turning OFF last method
             if (!newValue && !biometricEnabled) {
-                Toast.makeText(
-                        requireContext(),
-                        "At least one unlock method must be enabled",
-                        Toast.LENGTH_SHORT
-                ).show();
+                Toast.makeText(requireContext(), "At least one unlock method must be enabled", Toast.LENGTH_SHORT).show();
                 deviceCredentialSwitch.setChecked(true);
                 return;
             }
@@ -235,32 +218,23 @@ public class ProfileFragment extends Fragment {
             });
         });
 
+        // Reset Data Listeners
+        resetData.setOnClickListener(v -> clearData());
+        resetDataIcon.setOnClickListener(v -> clearData());
 
-        resetData.setOnClickListener(v -> {
-            clearData();
-        });
-
-        resetDataIcon.setOnClickListener(v -> {
-            clearData();
-        });
-
+        // Export Data Listeners
         exportData.setOnClickListener(v -> {
-            new ExportBottomSheet().show(
-                    requireActivity().getSupportFragmentManager(),
-                    "export_sheet"
-            );
+            new ExportBottomSheet().show(requireActivity().getSupportFragmentManager(), "export_sheet");
         });
 
         exportDataIcon.setOnClickListener(v -> {
-            new ExportBottomSheet().show(
-                    requireActivity().getSupportFragmentManager(),
-                    "export_sheet"
-            );
+            new ExportBottomSheet().show(requireActivity().getSupportFragmentManager(), "export_sheet");
         });
     }
 
+
+    // Navigation to App Lock Setup Flow (First Time)
     private void openSetupFlow() {
-        // Open the setup fragment where user chooses unlock methods.
         requireActivity().getSupportFragmentManager()
                 .beginTransaction()
                 .replace(R.id.frame_layout, new AppLockEnableFragment())
@@ -278,28 +252,17 @@ public class ProfileFragment extends Fragment {
         deviceCredentialTitle.setVisibility(v);
     }
 
-    // Authenticate user using BiometricPrompt + device credential fallback.
-    private void authenticate(@NonNull Runnable onSuccess,
-                              @NonNull Runnable onFail) {
+    // Authenticate user using BiometricPrompt (if available) and Device Credential (if available)
+    private void authenticate(@NonNull Runnable onSuccess, @NonNull Runnable onFail) {
 
         Context context = requireContext();
-
         int authenticators = 0;
 
-        // Respect user preferences
-        if (lockManager.biometrics()) {
-            authenticators |= BiometricManager.Authenticators.BIOMETRIC_STRONG;
-        }
+        if (lockManager.biometrics()) authenticators |= BiometricManager.Authenticators.BIOMETRIC_STRONG;
+        if (lockManager.deviceCredential()) authenticators |= BiometricManager.Authenticators.DEVICE_CREDENTIAL;
 
-        if (lockManager.deviceCredential()) {
-            authenticators |= BiometricManager.Authenticators.DEVICE_CREDENTIAL;
-        }
-
-        // No authentication method enabled → block
         if (authenticators == 0) {
-            Toast.makeText(context,
-                    "No authentication method enabled",
-                    Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "No authentication method enabled", Toast.LENGTH_SHORT).show();
             onFail.run();
             return;
         }
@@ -311,22 +274,15 @@ public class ProfileFragment extends Fragment {
                         new BiometricPrompt.AuthenticationCallback() {
 
                             @Override
-                            public void onAuthenticationSucceeded(
-                                    @NonNull BiometricPrompt.AuthenticationResult result) {
+                            public void onAuthenticationSucceeded(@NonNull BiometricPrompt.AuthenticationResult result) {
                                 onSuccess.run();
                             }
 
                             @Override
-                            public void onAuthenticationFailed() {
-                                // biometric rejected, prompt still active
-                            }
+                            public void onAuthenticationFailed() { }
 
                             @Override
-                            public void onAuthenticationError(
-                                    int errorCode,
-                                    @NonNull CharSequence errString) {
-
-                                // User cancelled or system cancelled
+                            public void onAuthenticationError(int errorCode, @NonNull CharSequence errString) {
                                 onFail.run();
                             }
                         });
@@ -341,7 +297,7 @@ public class ProfileFragment extends Fragment {
         biometricPrompt.authenticate(promptInfo);
     }
 
-    // password click listener
+    // Handle Change Password click
     private final View.OnClickListener passwordClickListener = v -> {
         if (isGoogleUser()) {
             Snackbar.make(v, "Google users must change password from Google Account", Snackbar.LENGTH_LONG).show();
@@ -355,21 +311,27 @@ public class ProfileFragment extends Fragment {
     };
 
 
-    // Sign out (clear cached data)
+    // Logout User
     private void signOut() {
-        logoutButton.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { // 1. Sign out from Firebase
-             FirebaseAuth.getInstance().signOut();
+        logoutButton.setOnClickListener(new View.OnClickListener() {
+            @Override public void onClick(View v) {
+                // 1. Sign out from Firebase
+                FirebaseAuth.getInstance().signOut();
 
-             // 2. Clear shared preferences (if user data is cached)
-            SharedPreferences prefs = requireActivity().getSharedPreferences("userData", Context.MODE_PRIVATE);
-            prefs.edit().clear().apply();
+                // 2. Clear shared preferences
+                SharedPreferences prefs = requireActivity().getSharedPreferences("userData", Context.MODE_PRIVATE);
+                prefs.edit().clear().apply();
 
-            // 3. Redirect to LoginActivity
-            Intent intent = new Intent(getActivity(), LoginActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK); startActivity(intent);
-            requireActivity().finish(); } } );
+                // 3. Redirect to LoginActivity
+                Intent intent = new Intent(getActivity(), LoginActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+                requireActivity().finish();
+            }
+        });
     }
 
+    // Fetch Name/Photo from Firestore
     private void loadUserData() {
 
         SharedPreferences prefs = requireContext().getSharedPreferences("USER_DATA", MODE_PRIVATE);
@@ -411,6 +373,7 @@ public class ProfileFragment extends Fragment {
                 .addOnFailureListener(e -> Log.e("ProfileFragment", "Failed to fetch user data: " + e.getMessage()));
     }
 
+    // Warning Dialog for Reset Data
     private void clearData(){
 
         new com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())

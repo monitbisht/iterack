@@ -38,9 +38,10 @@ public class ExportBottomSheet extends BottomSheetDialogFragment {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-
+        // Inflate the Bottom Sheet layout
         View view = inflater.inflate(R.layout.bottomsheet_export, container, false);
 
+        // Set Click Listeners for Export Options
         view.findViewById(R.id.export_pdf).setOnClickListener(v -> handleExport("pdf"));
         view.findViewById(R.id.export_csv).setOnClickListener(v -> handleExport("csv"));
         view.findViewById(R.id.export_json).setOnClickListener(v -> handleExport("json"));
@@ -49,6 +50,7 @@ public class ExportBottomSheet extends BottomSheetDialogFragment {
         return view;
     }
 
+    // Fetches all tasks from Firestore
     private void loadAllTasks(FireStoreHelper.FirestoreCallback<ArrayList<Tasks>> callback) {
 
         FireStoreHelper.getInstance().getAllTasks(new FireStoreHelper.FirestoreCallback<ArrayList<Tasks>>() {
@@ -64,6 +66,8 @@ public class ExportBottomSheet extends BottomSheetDialogFragment {
             }
         });
     }
+
+    // Main logic: Fetch data, then call specific export function
     private void handleExport(String type) {
 
         loadAllTasks(new FireStoreHelper.FirestoreCallback<ArrayList<Tasks>>() {
@@ -86,7 +90,7 @@ public class ExportBottomSheet extends BottomSheetDialogFragment {
                         break;
                 }
 
-                dismiss();
+                dismiss(); // Close sheet
                 Toast.makeText(getContext(),
                         "Exporting as " + type.toUpperCase(),
                         Toast.LENGTH_SHORT).show();
@@ -102,6 +106,7 @@ public class ExportBottomSheet extends BottomSheetDialogFragment {
     }
 
 
+    // 1. JSON EXPORT
     private void exportJson(List<Tasks> tasks) {
         try {
             JSONArray arr = new JSONArray();
@@ -122,10 +127,10 @@ public class ExportBottomSheet extends BottomSheetDialogFragment {
                 arr.put(obj);
             }
 
+            // Write to file
             File file = new File(requireContext().getExternalFilesDir(null), "tasks.json");
-
             FileWriter writer = new FileWriter(file);
-            writer.write(arr.toString(4));
+            writer.write(arr.toString(4)); // Pretty print with indentation
             writer.close();
 
             shareFile(file, "application/json");
@@ -135,6 +140,7 @@ public class ExportBottomSheet extends BottomSheetDialogFragment {
         }
     }
 
+    // 2. TEXT FILE EXPORT
     private void exportTxt(List<Tasks> tasks) {
         try {
             File file = new File(requireContext().getExternalFilesDir(null), "tasks.txt");
@@ -154,7 +160,6 @@ public class ExportBottomSheet extends BottomSheetDialogFragment {
             }
 
             writer.close();
-
             shareFile(file, "text/plain");
 
         } catch (Exception e) {
@@ -162,14 +167,16 @@ public class ExportBottomSheet extends BottomSheetDialogFragment {
         }
     }
 
+    // 3. CSV (EXCEL) EXPORT
     private void exportCsv(List<Tasks> tasks) {
         try {
             File file = new File(requireContext().getExternalFilesDir(null), "tasks.csv");
             FileWriter writer = new FileWriter(file);
 
-            // CSV Header
+            // CSV Header Row
             writer.write("TaskID,Title,Description,Group,StartDate,EndDate,CreatedOn,CompletionDate,Status,Completed\n");
 
+            // Data Rows (Using quote() to handle commas inside text)
             for (Tasks t : tasks) {
                 writer.write(
                         safe(t.getTaskId()) + "," +
@@ -186,7 +193,6 @@ public class ExportBottomSheet extends BottomSheetDialogFragment {
             }
 
             writer.close();
-
             shareFile(file, "text/csv");
 
         } catch (Exception e) {
@@ -194,14 +200,15 @@ public class ExportBottomSheet extends BottomSheetDialogFragment {
         }
     }
 
+    // 4. PDF EXPORT
     private void exportPdf(List<Tasks> tasks) {
         try {
             PdfDocument pdf = new PdfDocument();
             Paint paint = new Paint();
 
-            int pageWidth = 595;  // A4 width
-            int pageHeight = 842;
-            int y = 60;
+            int pageWidth = 595;  // Standard A4 width
+            int pageHeight = 842; // Standard A4 height
+            int y = 60; // Initial Y position for text
 
             PdfDocument.PageInfo pageInfo = new PdfDocument.PageInfo.Builder(pageWidth, pageHeight, 1).create();
             PdfDocument.Page page = pdf.startPage(pageInfo);
@@ -211,6 +218,7 @@ public class ExportBottomSheet extends BottomSheetDialogFragment {
 
             for (Tasks t : tasks) {
 
+                // Start new page if run out of space
                 if (y > pageHeight - 100) {
                     pdf.finishPage(page);
                     pageInfo = new PdfDocument.PageInfo.Builder(pageWidth, pageHeight, pdf.getPages().size() + 1).create();
@@ -219,6 +227,7 @@ public class ExportBottomSheet extends BottomSheetDialogFragment {
                     y = 60;
                 }
 
+                // Draw text line by line
                 canvas.drawText("Title: " + t.getTaskTitle(), 40, y, paint); y += 18;
                 canvas.drawText("Description: " + t.getTaskDescription(), 40, y, paint); y += 18;
                 canvas.drawText("Group: " + t.getTaskGroup(), 40, y, paint); y += 18;
@@ -227,11 +236,12 @@ public class ExportBottomSheet extends BottomSheetDialogFragment {
                 canvas.drawText("Created On: " + formatDate(t.getCreatedOn()),40, y, paint); y += 18;
                 canvas.drawText("Completed On: " + formatDate(t.getCompletionDate()),40, y, paint); y += 18;
                 canvas.drawText("Status: " + t.getStatus(), 40, y, paint); y += 18;
-                canvas.drawText("Completed: " + t.isCompleted(), 40, y, paint); y += 28;
+                canvas.drawText("Completed: " + t.isCompleted(), 40, y, paint); y += 28; // Extra space between tasks
             }
 
             pdf.finishPage(page);
 
+            // Write to file
             File file = new File(requireContext().getExternalFilesDir(null), "tasks.pdf");
             pdf.writeTo(new FileOutputStream(file));
             pdf.close();
@@ -243,6 +253,7 @@ public class ExportBottomSheet extends BottomSheetDialogFragment {
         }
     }
 
+    //Helper: Launches Android Share Sheet for the generated file
     private void shareFile(File file, String mimeType) {
         Uri uri = FileProvider.getUriForFile(
                 requireContext(),
@@ -259,19 +270,20 @@ public class ExportBottomSheet extends BottomSheetDialogFragment {
     }
 
 
-
+    // Helper: Escapes quotes for CSV (e.g. "Hello" -> "'Hello'")
     private String quote(String text) {
         if (text == null) return "\"\"";
         return "\"" + text.replace("\"", "'") + "\"";
     }
 
+    // Helper: Returns empty string for nulls
     private String safe(String text) {
         return text == null ? "" : text;
     }
 
+    // Helper: Dates to String
     private String formatDate(Date date) {
         if (date == null) return "-";
         return new SimpleDateFormat("dd MMM yyyy", Locale.getDefault()).format(date);
     }
-
 }

@@ -12,6 +12,7 @@ import java.util.concurrent.TimeUnit;
 
 public class NotificationScheduler {
 
+    // Queue up all daily reminders
     public static void scheduleAll(Context context) {
         scheduleReminder(context, "MORNING", 8, 0);
         scheduleReminder(context, "MIDDAY", 14, 0);
@@ -20,6 +21,7 @@ public class NotificationScheduler {
         scheduleReminder(context, "SUMMARY", 22, 0);
     }
 
+    // Cancel all pending notification work
     public static void cancelAll(Context context) {
         WorkManager wm = WorkManager.getInstance(context);
 
@@ -30,7 +32,7 @@ public class NotificationScheduler {
         wm.cancelUniqueWork("REMINDER_OVERDUE");
     }
 
-
+    // Create and enqueue a periodic work request
     private static void scheduleReminder(Context context, String tag, int hour, int minute) {
 
         long delay = calculateDelay(hour, minute);
@@ -46,11 +48,12 @@ public class NotificationScheduler {
         WorkManager.getInstance(context)
                 .enqueueUniquePeriodicWork(
                         "REMINDER_" + tag,            // Unique name
-                        ExistingPeriodicWorkPolicy.UPDATE,   // Important!
+                        ExistingPeriodicWorkPolicy.UPDATE,   // Update existing work
                         request
                 );
     }
 
+    // Calculate time remaining until the next specific hour/minute
     private static long calculateDelay(int hour, int minute) {
         Calendar now = Calendar.getInstance();
         Calendar next = Calendar.getInstance();
@@ -59,6 +62,7 @@ public class NotificationScheduler {
         next.set(Calendar.SECOND, 0);
         next.set(Calendar.MILLISECOND, 0);
 
+        // If time has passed today, schedule for tomorrow
         if (next.before(now)) {
             next.add(Calendar.DAY_OF_YEAR, 1);
         }
@@ -66,4 +70,3 @@ public class NotificationScheduler {
         return next.getTimeInMillis() - now.getTimeInMillis();
     }
 }
-

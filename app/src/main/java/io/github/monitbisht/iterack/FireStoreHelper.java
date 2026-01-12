@@ -20,17 +20,19 @@ public class FireStoreHelper {
     private static FireStoreHelper instance;
     private FirebaseFirestore db;
 
+    // Callback Interface to handle async Firebase results
     public interface FirestoreCallback<T> {
         void onSuccess(T result);
         void onError(Exception e);
     }
 
 
-
+    // Private Constructor
     private FireStoreHelper() {
         db = FirebaseFirestore.getInstance();
     }
 
+    // Get Single Instance
     public static FireStoreHelper getInstance() {
         if (instance == null) {
             instance = new FireStoreHelper();
@@ -38,12 +40,15 @@ public class FireStoreHelper {
         return instance;
     }
 
+    // Get Current User ID
     private String getUid() {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         return user != null ? user.getUid() : null;
     }
 
-    // ADD Task
+    // CRUD OPERATIONS
+
+    // CREATE: Add a new task to Firestore
     public void addTask(Tasks task, FirestoreCallback<Void> cb) {
 
         String uid = getUid();
@@ -57,6 +62,7 @@ public class FireStoreHelper {
                 .collection("tasks")
                 .add(task)
                 .addOnSuccessListener(doc -> {
+                    // Update the task object with the generated ID
                     task.setTaskId(doc.getId());
                     doc.update("taskId", doc.getId());
                     cb.onSuccess(null);
@@ -64,7 +70,7 @@ public class FireStoreHelper {
                 .addOnFailureListener(cb::onError);
     }
 
-    // GET Tasks
+    // READ: Get all tasks for the current user
     public void getAllTasks(FirestoreCallback<ArrayList<Tasks>> cb) {
 
         String uid = getUid();
@@ -88,7 +94,7 @@ public class FireStoreHelper {
                 .addOnFailureListener(cb::onError);
     }
 
-    // UPDATE Task
+    // UPDATE: Modify an existing task
     public void updateTask(Tasks task, FirestoreCallback<Void> cb) {
 
         String uid = getUid();
@@ -101,12 +107,12 @@ public class FireStoreHelper {
                 .document(uid)
                 .collection("tasks")
                 .document(task.getTaskId())
-                .set(task)
+                .set(task) // Overwrite document
                 .addOnSuccessListener(unused -> cb.onSuccess(null))
                 .addOnFailureListener(cb::onError);
     }
 
-    // DELETE Task
+    // DELETE: Remove a task
     public void deleteTask(String taskId, FirestoreCallback<Void> cb) {
 
         String uid = getUid();
@@ -124,16 +130,21 @@ public class FireStoreHelper {
                 .addOnFailureListener(cb::onError);
     }
 
+    // STATS & ANALYTICS
+
+    // Save weekly productivity stats
     public void saveWeeklyStats(String uid, Map<String, Object> data, FirestoreCallback<Boolean> callback) {
         FirebaseFirestore.getInstance()
                 .collection("users")
                 .document(uid)
                 .collection("stats")
                 .document("weeklyStats")
-                .set(data, SetOptions.merge())
+                .set(data, SetOptions.merge()) // Merge updates instead of overwriting
                 .addOnSuccessListener(aVoid -> callback.onSuccess(true))
                 .addOnFailureListener(callback::onError);
     }
+
+    // Retrieve weekly stats
     public void getWeeklyStats(String uid, FirestoreCallback<Map<String, Object>> callback) {
         FirebaseFirestore.getInstance()
                 .collection("users")
@@ -151,91 +162,8 @@ public class FireStoreHelper {
                 .addOnFailureListener(callback::onError);
     }
 
-    // Get tasks starting today
-    public void getTasksStartingToday(FirestoreCallback<List<Tasks>> cb) {
-        getAllTasks(new FirestoreCallback<ArrayList<Tasks>>() {
-            @Override
-            public void onSuccess(ArrayList<Tasks> tasks) {
-                Date today = strip(new Date());
-                List<Tasks> result = new ArrayList<>();
 
-                for (Tasks t : tasks) {
-                    if (t.getStartDate() != null && strip(t.getStartDate()).equals(today)) {
-                        result.add(t);
-                    }
-                }
-                cb.onSuccess(result);
-            }
-
-            @Override
-            public void onError(Exception e) { cb.onError(e); }
-        });
-    }
-
-    public void getTasksEndingToday(FirestoreCallback<List<Tasks>> cb) {
-        getAllTasks(new FirestoreCallback<ArrayList<Tasks>>() {
-            @Override
-            public void onSuccess(ArrayList<Tasks> tasks) {
-                Date today = strip(new Date());
-                List<Tasks> result = new ArrayList<>();
-
-                for (Tasks t : tasks) {
-                    if (t.getEndDate() != null && strip(t.getEndDate()).equals(today)) {
-                        result.add(t);
-                    }
-                }
-                cb.onSuccess(result);
-            }
-
-            @Override
-            public void onError(Exception e) { cb.onError(e); }
-        });
-    }
-
-    public void getTodaysRemainingTasks(FirestoreCallback<List<Tasks>> cb) {
-        getAllTasks(new FireStoreHelper.FirestoreCallback<ArrayList<Tasks>>() {
-            @Override
-            public void onSuccess(ArrayList<Tasks> tasks) {
-                Date today = strip(new Date());
-                List<Tasks> result = new ArrayList<>();
-
-                for (Tasks t : tasks) {
-                    if (!t.isCompleted() &&
-                            t.getEndDate() != null &&
-                            !strip(t.getEndDate()).before(today)) {
-                        result.add(t);
-                    }
-                }
-                cb.onSuccess(result);
-            }
-
-            @Override
-            public void onError(Exception e) { cb.onError(e); }
-        });
-    }
-
-    public void getOverdueTasks(FirestoreCallback<List<Tasks>> cb) {
-        getAllTasks(new FireStoreHelper.FirestoreCallback<ArrayList<Tasks>>() {
-            @Override
-            public void onSuccess(ArrayList<Tasks> tasks) {
-                Date today = strip(new Date());
-                List<Tasks> result = new ArrayList<>();
-
-                for (Tasks t : tasks) {
-                    if (!t.isCompleted() &&
-                            t.getEndDate() != null &&
-                            strip(t.getEndDate()).before(today)) {
-                        result.add(t);
-                    }
-                }
-                cb.onSuccess(result);
-            }
-
-            @Override
-            public void onError(Exception e) { cb.onError(e); }
-        });
-    }
-
+    // Helper: Blocking Call for WorkManager (waits for async result)
     public ArrayList<Tasks> getAllTasksBlocking() throws Exception {
         String uid = getUid();
         if (uid == null) throw new Exception("User not logged in");
@@ -257,19 +185,8 @@ public class FireStoreHelper {
                     latch.countDown();
                 });
 
-        latch.await(10, TimeUnit.SECONDS);
+        latch.await(10, TimeUnit.SECONDS); // Timeout after 10s
         return list;
     }
-
-    private Date strip(Date date) {
-        Calendar c = Calendar.getInstance();
-        c.setTime(date);
-        c.set(Calendar.HOUR_OF_DAY, 0);
-        c.set(Calendar.MINUTE, 0);
-        c.set(Calendar.SECOND, 0);
-        c.set(Calendar.MILLISECOND, 0);
-        return c.getTime();
-    }
-
 
 }

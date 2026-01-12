@@ -46,9 +46,6 @@
             android:name=".ForgotPasswordActivity"
             android:exported="false" />
 
-        <activity android:name=".AppLockActivity"
-            android:exported="false" />
-
         <!-- FileProvider for sharing exported files -->
         <provider
             android:name="androidx.core.content.FileProvider"

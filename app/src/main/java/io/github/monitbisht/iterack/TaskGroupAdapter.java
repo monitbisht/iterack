@@ -48,23 +48,22 @@ public class TaskGroupAdapter extends BaseAdapter {
         ProgressBar progressBar = view.findViewById(R.id.progressBar);
         CircleImageView groupIcon = view.findViewById(R.id.task_group_icon);
 
-
         TaskGroup group = taskGroupList.get(position);
 
+        // Set Data
         heading.setText(group.name);
         taskRatio.setText(String.format("%d / %d", group.completedTasks, group.totalTasks));
 
+        // Calculate and Set Progress
         int progress = (int) ((group.completedTasks * 100.0f) / group.totalTasks);
         progressBar.setProgress(progress);
 
         groupIcon.setImageResource(group.profileIcon);
 
+        // Styling
         Drawable bg = taskRatio.getBackground().mutate();
         bg.setTint(context.getResources().getColor(R.color.dark_gray));
-
         taskRatio.setTextColor(context.getResources().getColor(R.color.light_gray));
-
-
 
         return view;
     }

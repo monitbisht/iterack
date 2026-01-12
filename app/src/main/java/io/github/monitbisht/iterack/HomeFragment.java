@@ -52,7 +52,7 @@ public class HomeFragment extends Fragment {
     TextView progressBarText , userName ;
     CircleImageView profileImage;
 
-
+    // Counters for the Circular Progress Bar
     private int totalTodaysTasks = 0;
     private int completedTodayTasks = 0;
 
@@ -86,9 +86,7 @@ public class HomeFragment extends Fragment {
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-
-
-        //Profile Pic for Email Login Users
+        // Use default image if not signed in via Google
         if (isGoogleUser() == false){
             profileImage.setImageResource(R.drawable.profile_pic);
         }
@@ -100,7 +98,7 @@ public class HomeFragment extends Fragment {
             }
         });
 
-       userName.setOnClickListener(v -> {
+        userName.setOnClickListener(v -> {
             // 1. Prepare "Fake" Data (Pretend it is Morning)
             androidx.work.Data testData = new androidx.work.Data.Builder()
                     .putString("TYPE", "MORNING") //
@@ -118,11 +116,13 @@ public class HomeFragment extends Fragment {
             Toast.makeText(getContext(), "Checking Morning Logic...", Toast.LENGTH_SHORT).show();
         });
 
+        // Load Data
         loadUserData();
         loadTaskGroups();
         loadTaskProgress();
     }
 
+    // Fetches user name/photo (Uses SharedPreferences (Cache) first, then Network.)
     private void loadUserData() {
 
         SharedPreferences prefs = requireContext().getSharedPreferences("USER_DATA", Context.MODE_PRIVATE);
@@ -133,12 +133,12 @@ public class HomeFragment extends Fragment {
 
         String uid = user.getUid();
 
-        // 1. If UID changed -> clear old user cache
+        // 1. If UID changed (different user logged in) -> clear old user cache
         if (cachedUid != null && !cachedUid.equals(uid)) {
             prefs.edit().clear().apply();
         }
 
-        // Load cached data
+        // 2. Load cached data
         String cachedName = prefs.getString("name", null);
         String cachedPhoto = prefs.getString("photoUrl", null);
 
@@ -154,7 +154,7 @@ public class HomeFragment extends Fragment {
                     .into(profileImage);
         }
 
-        // 2. Fetch the fresh data from Firestore
+        // 3. Fetch fresh data from Firestore (Network)
         FirebaseFirestore.getInstance()
                 .collection("users")
                 .document(uid)
@@ -165,7 +165,7 @@ public class HomeFragment extends Fragment {
                         String name = doc.getString("name");
                         String photoUrl = doc.getString("photoUrl");
 
-                        // Update UI
+                        // Update UI with fresh data
                         if (name != null) userName.setText(name);
                         if (photoUrl != null) {
                             Glide.with(requireContext())
@@ -175,7 +175,7 @@ public class HomeFragment extends Fragment {
                                     .into(profileImage);
                         }
 
-                        // 3. Save new data + UID in cache
+                        // 4. Save new data to cache
                         prefs.edit()
                                 .putString("uid", uid)
                                 .putString("name", name)
@@ -188,21 +188,14 @@ public class HomeFragment extends Fragment {
                 );
     }
 
-
+    // Opens BottomSheet showing tasks for TODAY only
     private void showTodayTasksDialog() {
         BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(requireContext());
         View dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.home_tasks_bottomsheet, null);
         bottomSheetDialog.setContentView(dialogView);
 
         ImageButton closeButton = dialogView.findViewById(R.id.close_button);
-
-        closeButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                bottomSheetDialog.dismiss();
-            }
-        });
-
+        closeButton.setOnClickListener(v -> bottomSheetDialog.dismiss());
 
         Date today = new Date();
 
@@ -210,25 +203,21 @@ public class HomeFragment extends Fragment {
             @Override
             public void onSuccess(ArrayList<Tasks> result) {
                 LinearLayout tasksContainer = dialogView.findViewById(R.id.bottomSheetTaskContainer);
-
-
                 tasksContainer.removeAllViews();
 
                 boolean hasTasksForToday = false;
 
-
                 for (Tasks t : result) {
                     t.updateStatus(today);
 
+                    // Only show tasks active today
                     if (isTodayWithinRange(today, t.getStartDate(), t.getEndDate())) {
                         hasTasksForToday = true;
-
                         View taskRow = inflateBottomsheetTask(t);
                         tasksContainer.addView(taskRow);
                     }
                 }
 
-                // If no tasks for today, show toast
                 if (!hasTasksForToday) {
                     Toast.makeText(getContext(), "No tasks for today", Toast.LENGTH_SHORT).show();
                     return;
@@ -237,13 +226,11 @@ public class HomeFragment extends Fragment {
                 }
             }
             @Override
-            public void onError(Exception e) {
-
-            }
+            public void onError(Exception e) { }
         });
-
     }
 
+    // Helper: Checks if today is between Start Date and End Date
     private boolean isTodayWithinRange(Date today, Date start, Date end) {
         today = stripTime(today);
         start = stripTime(start);
@@ -252,7 +239,7 @@ public class HomeFragment extends Fragment {
         return !today.before(start) && !today.after(end);
     }
 
-
+    // Helper: Creates a single row view for the bottom sheet list
     private View inflateBottomsheetTask(Tasks task) {
         View item = LayoutInflater.from(requireContext())
                 .inflate(R.layout.bottomsheet_tasks_card_layout, null, false);
@@ -262,7 +249,7 @@ public class HomeFragment extends Fragment {
         TextView status = item.findViewById(R.id.task_status);
         CheckBox check = item.findViewById(R.id.taskCheckbox);
 
-        // Flatten card for bottomsheet
+        // Formatting for list view
         card.setStrokeWidth(0);
         card.setElevation(0);
         card.setRadius(12);
@@ -271,106 +258,79 @@ public class HomeFragment extends Fragment {
         status.setText(task.getStatus());
         check.setChecked(task.isCompleted());
 
-        // Correct pill color on load
         tintStatusPill(status, task.getStatus());
 
-        // Green Checkbox for completed tasks
         if (task.getStatus().equals("Completed")) {
-            check.setButtonTintList(
-                    ContextCompat.getColorStateList(requireContext(), R.color.fresh_green)
-            );
+            check.setButtonTintList(ContextCompat.getColorStateList(requireContext(), R.color.fresh_green));
         }
 
+        // Handle Checkbox Click (Complete/Incomplete)
         check.setOnCheckedChangeListener((btn, isChecked) -> {
 
             task.setCompleted(isChecked);
 
             if (isChecked) {
-                // Completed
+                // Mark Completed
                 task.setStatus("Completed");
                 status.setText("Completed");
                 task.setCompletionDate(new Date());
                 tintStatusPill(status, "Completed");
 
-                title.setPaintFlags(title.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+                title.setPaintFlags(title.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG); // Strikethrough
                 title.setTextColor(requireContext().getColor(R.color.medium_gray));
 
-                check.setButtonTintList(
-                        ContextCompat.getColorStateList(requireContext(), R.color.fresh_green)
-                );
-                loadTaskProgress();
+                check.setButtonTintList(ContextCompat.getColorStateList(requireContext(), R.color.fresh_green));
+                loadTaskProgress(); // Refresh circle progress
             } else {
-                // Recalculate proper status from dates
+                // Mark Incomplete (Restore status based on dates)
                 task.setCompleted(false);
                 task.updateStatus(new Date());
                 task.setCompletionDate(null);
 
                 String newStatus = task.getStatus();
                 status.setText(newStatus);
-
-                // restore pill color
                 tintStatusPill(status, newStatus);
 
-                // restore title text style
-                title.setPaintFlags(title.getPaintFlags() & ~Paint.STRIKE_THRU_TEXT_FLAG);
+                title.setPaintFlags(title.getPaintFlags() & ~Paint.STRIKE_THRU_TEXT_FLAG); // Remove Strikethrough
                 title.setTextColor(requireContext().getColor(R.color.off_white));
 
-                // restore checkbox tint
-                check.setButtonTintList(
-                        ContextCompat.getColorStateList(requireContext(), R.color.medium_gray)
-                );
+                check.setButtonTintList(ContextCompat.getColorStateList(requireContext(), R.color.medium_gray));
 
-                // Missed tasks should not be clickable
+                // If task is actually overdue, disable interaction
                 if (newStatus.equals("Missed")) {
                     check.setClickable(false);
-                    check.setButtonTintList(
-                            ContextCompat.getColorStateList(requireContext(), R.color.dark_gray)
-                    );
+                    check.setButtonTintList(ContextCompat.getColorStateList(requireContext(), R.color.dark_gray));
                 }
                 loadTaskProgress();
             }
 
+            // Sync with Firestore
             FireStoreHelper.getInstance().updateTask(task, new FireStoreHelper.FirestoreCallback<Void>() {
-                @Override
-                public void onSuccess(Void r) {
-                    Log.d("TaskUpdate", "Updated successfully");
-                }
-
-                @Override
-                public void onError(Exception e) {
-                    Log.e("TaskUpdate", "Update failed: " + e.getMessage());
-                }
+                @Override public void onSuccess(Void r) { Log.d("TaskUpdate", "Updated successfully"); }
+                @Override public void onError(Exception e) { Log.e("TaskUpdate", "Update failed: " + e.getMessage()); }
             });
         });
 
         return item;
     }
 
+    // Helper: Colors the status badge based on task state
     private void tintStatusPill(TextView pill, String status) {
         int color;
-
         switch (status) {
-            case "Completed":
-                color = requireContext().getColor(R.color.fresh_green);
-                break;
-            case "Missed":
-                color = requireContext().getColor(R.color.poppy_red);
-                break;
-            case "Active":
-                color = requireContext().getColor(R.color.sky_blue);
-                break;
-            default:
-                color = requireContext().getColor(R.color.sunny_yellow);
+            case "Completed": color = requireContext().getColor(R.color.fresh_green); break;
+            case "Missed": color = requireContext().getColor(R.color.poppy_red); break;
+            case "Active": color = requireContext().getColor(R.color.sky_blue); break;
+            default: color = requireContext().getColor(R.color.sunny_yellow);
         }
-
         Drawable bg = pill.getBackground().mutate();
         bg.setTint(color);
     }
 
+    // Counts tasks per group (Work, Health, etc.) for the GridView
     private void loadTaskGroups() {
 
         FireStoreHelper.getInstance().getAllTasks(new FireStoreHelper.FirestoreCallback<ArrayList<Tasks>>() {
-
             @Override
             public void onSuccess(ArrayList<Tasks> result) {
 
@@ -380,44 +340,21 @@ public class HomeFragment extends Fragment {
                 int studyTotal = 0, studyCompleted = 0;
 
                 for (Tasks t : result) {
-
-                    // Skip tasks not in current month
+                    // Filter: Only count current month tasks
                     if (!isTaskInCurrentMonth(t)) continue;
-
-                    // Skip missed tasks entirely
-                    if (t.getStatus().equals("Missed")) {
-                        continue;
-                    }
-
+                    // Filter: Ignore missed tasks in group count
+                    if (t.getStatus().equals("Missed")) continue;
 
                     switch (t.getTaskGroup()) {
-                        case "Work":
-                            workTotal++;
-                            if (t.isCompleted()) workCompleted++;
-                            break;
-
-                        case "Personal":
-                            personalTotal++;
-                            if (t.isCompleted()) personalCompleted++;
-                            break;
-
-                        case "Health":
-                            healthTotal++;
-                            if (t.isCompleted()) healthCompleted++;
-                            break;
-
-                        case "Study":
-                            studyTotal++;
-                            if (t.isCompleted()) studyCompleted++;
-                              break;
-
-                        default:
-                            Log.e("TaskDebug", "NO MATCH for group: " + t.getTaskGroup());
-                            break;
+                        case "Work": workTotal++; if (t.isCompleted()) workCompleted++; break;
+                        case "Personal": personalTotal++; if (t.isCompleted()) personalCompleted++; break;
+                        case "Health": healthTotal++; if (t.isCompleted()) healthCompleted++; break;
+                        case "Study": studyTotal++; if (t.isCompleted()) studyCompleted++; break;
+                        default: Log.e("TaskDebug", "NO MATCH for group: " + t.getTaskGroup()); break;
                     }
                 }
 
-
+                // Prepare list for Adapter
                 List<TaskGroup> taskGroups = new ArrayList<>();
                 taskGroups.add(new TaskGroup("Personal", personalCompleted, personalTotal, R.drawable.ic_personal));
                 taskGroups.add(new TaskGroup("Work", workCompleted, workTotal, R.drawable.ic_work));
@@ -426,10 +363,7 @@ public class HomeFragment extends Fragment {
 
                 TaskGroupAdapter adapter = new TaskGroupAdapter(getContext(), taskGroups);
                 gridView.setAdapter(adapter);
-
-
             }
-
             @Override
             public void onError(Exception e) {
                 Toast.makeText(getContext(), "Failed to load groups", Toast.LENGTH_SHORT).show();
@@ -437,37 +371,26 @@ public class HomeFragment extends Fragment {
         });
     }
 
+    // Calculates and updates the circular progress bar for Today's tasks
     private void loadTaskProgress(){
-
-
         FireStoreHelper.getInstance().getAllTasks(new FireStoreHelper.FirestoreCallback<ArrayList<Tasks>>() {
-
             @Override
             public void onSuccess(ArrayList<Tasks> result) {
-
                 totalTodaysTasks = 0;
                 completedTodayTasks = 0;
                 Date today = new Date();
 
-
                 for (Tasks t : result) {
                     t.updateStatus(today);
-
                     if (isTodayWithinRange(today, t.getStartDate(), t.getEndDate())) {
                         if (t.getStatus().equals("Completed")) completedTodayTasks++;
                         totalTodaysTasks++;
-
                     }
                 }
                 setProgressBar();
             }
-
-            @Override
-            public void onError(Exception e) {
-
-            }
+            @Override public void onError(Exception e) { }
         });
-
         setProgressBar();
     }
 
@@ -477,15 +400,12 @@ public class HomeFragment extends Fragment {
             circularProgressBar.setProgress(0);
             return;
         }
-
         float percent = (completedTodayTasks * 100f) / totalTodaysTasks;
         progressBarText.setText((int) percent + "%");
         circularProgressBar.setProgress(percent);
-
-
-
     }
 
+    // Helper: Checks if a task belongs to the current month (Start or End date)
     private boolean isTaskInCurrentMonth(Tasks task) {
         if (task.getStartDate() == null || task.getEndDate() == null) return false;
 
@@ -499,13 +419,8 @@ public class HomeFragment extends Fragment {
         Calendar endCal = Calendar.getInstance();
         endCal.setTime(task.getEndDate());
 
-        boolean startInCurrentMonth =
-                startCal.get(Calendar.MONTH) == currentMonth &&
-                        startCal.get(Calendar.YEAR) == currentYear;
-
-        boolean endInCurrentMonth =
-                endCal.get(Calendar.MONTH) == currentMonth &&
-                        endCal.get(Calendar.YEAR) == currentYear;
+        boolean startInCurrentMonth = startCal.get(Calendar.MONTH) == currentMonth && startCal.get(Calendar.YEAR) == currentYear;
+        boolean endInCurrentMonth = endCal.get(Calendar.MONTH) == currentMonth && endCal.get(Calendar.YEAR) == currentYear;
 
         return startInCurrentMonth || endInCurrentMonth;
     }
@@ -513,9 +428,8 @@ public class HomeFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        loadTaskGroups();
+        loadTaskGroups(); // Refresh groups when returning to screen
     }
-
 
     private boolean isGoogleUser() {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
@@ -535,7 +449,4 @@ public class HomeFragment extends Fragment {
         c.set(Calendar.MILLISECOND, 0);
         return c.getTime();
     }
-
-
-
 }

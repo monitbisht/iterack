@@ -50,9 +50,12 @@ public class InsightFragment extends Fragment {
     private TextView currentStreakTv, longestStreakTv, totalCompletedTv, totalMissedTv;
 
     private TextView scoreText, tipText, conclusionText, summaryText, weeklyTip;
+
+    // View Modes
     private static final String MODE_WEEKLY = "Weekly";
     private static final String MODE_MONTHLY = "Monthly";
 
+    // Weekly Comparison Tracking
     private int lastSavedWeek = -1;
     private int currentWeekCompleted = 0;
     private int previousWeekCompleted = 0;
@@ -89,13 +92,12 @@ public class InsightFragment extends Fragment {
         setNewUserState();
         setupDropdown();
         showEmptyWeeklyChart(); // default mode only
-
-        loadInsightDataAndRender(MODE_WEEKLY);    // default view
+        loadInsightDataAndRender(MODE_WEEKLY);  // Trigger data fetch
 
     }
 
 
-    // 1. Load Task Data with Rendering
+    // Fetches data, calculates stats, renders chart, and calls AI
     private void loadInsightDataAndRender(String mode) {
 
         FireStoreHelper.getInstance().getAllTasks(new FireStoreHelper.FirestoreCallback<ArrayList<Tasks>>() {
@@ -104,25 +106,26 @@ public class InsightFragment extends Fragment {
 
                 if (!isAdded() || getContext() == null) return;
 
+                // Handle Empty Data
                 if (tasksList == null || tasksList.isEmpty()) {
                     if (MODE_WEEKLY.equals(mode)) showEmptyWeeklyChart();
                     else showEmptyMonthlyChart();
-
                     setNewUserState();
                     return;
                 }
 
-
+                // Calculate General Stats (Streaks, Totals)
                 updateCounters(tasksList);
 
+                // Calculate Weekly Comparisons (Current vs Previous)
                 currentWeekCompleted = countWeeklyCompleted(tasksList, false);
                 previousWeekCompleted = countWeeklyCompleted(tasksList, true);
-
                 currentWeekMissed = countWeeklyMissed(tasksList, false);
                 previousWeekMissed = countWeeklyMissed(tasksList, true);
 
                 saveWeeklyStatsToFirestore();
 
+                // Render Chart based on mode
                 if (MODE_WEEKLY.equals(mode)) {
                     handleWeeklyRollover(tasksList);
                     renderWeeklyChart(getWeeklyTaskCounts(tasksList));
@@ -130,8 +133,7 @@ public class InsightFragment extends Fragment {
                     renderMonthlyChart(getMonthlyCounts(tasksList));
                 }
 
-                // Fetching Weekly Stats
-
+                // AI Summary Generation
                 String uid = FirebaseAuth.getInstance().getUid();
 
                 FireStoreHelper.getInstance().getWeeklyStats(uid,
@@ -139,16 +141,14 @@ public class InsightFragment extends Fragment {
                             @Override
                             public void onSuccess(Map<String, Object> statsMap) {
 
+                                // Get account age
                                 long creationTime = FirebaseAuth.getInstance()
-                                        .getCurrentUser()
-                                        .getMetadata()
-                                        .getCreationTimestamp();
-
+                                        .getCurrentUser().getMetadata().getCreationTimestamp();
                                 Date joinDate = new Date(creationTime);
                                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
                                 String joinDateString = sdf.format(joinDate);
 
-                                // Now statsMap exists → no error
+                                // Build JSON for AI
                                 String weeklyJson = buildWeeklyJson(tasksList, joinDateString, statsMap);
 
                                 String previousJson = getLastWeeklyJson();
@@ -156,6 +156,7 @@ public class InsightFragment extends Fragment {
 
                                 setLoadingState();
 
+                                // If data hasn't changed, use cached AI result
                                 if (previousJson != null && previousJson.equals(currentJson)) {
                                     String cached = getCachedInsights();
                                     if (cached != null) {
@@ -165,6 +166,7 @@ public class InsightFragment extends Fragment {
                                     }
                                 }
 
+                                // Call AI (Gemini)
                                 AiHelper ai = new AiHelper();
                                 ai.generateWeeklySummary(currentJson, new AiCallback() {
                                     @Override
@@ -177,18 +179,12 @@ public class InsightFragment extends Fragment {
                                         getActivity().runOnUiThread(() -> applyAiOutput(output));
                                         stopLoadingAnimation();
                                     }
-
                                     @Override
-                                    public void onError(String error) {
-                                        Log.e("AI_ERROR", error);
-                                    }
+                                    public void onError(String error) { Log.e("AI_ERROR", error); }
                                 });
                             }
-
                             @Override
-                            public void onError(Exception e) {
-                                Log.e("STATS", "Could not fetch weeklyStats");
-                            }
+                            public void onError(Exception e) { Log.e("STATS", "Could not fetch weeklyStats"); }
                         });
             }
 
@@ -217,36 +213,35 @@ public class InsightFragment extends Fragment {
     }
 
 
-    // Method to set default "Welcome" data for new users
+    // Helper: Sets default UI state for new users (Zero data)
     private void setNewUserState() {
-        // 1. Reset Counters
         scoreText.setText("0");
         currentStreakTv.setText("0 days");
         longestStreakTv.setText("0 days");
         totalCompletedTv.setText("0");
         totalMissedTv.setText("0");
 
-        // 2. Set Welcome Messages
         tipText.setText("Complete your first task to unlock insights.");
         summaryText.setText("Your weekly summary will appear here once you start completing tasks.");
         conclusionText.setText("Let's get productive!");
         weeklyTip.setText("Tip: Start small! Add just one task for today to build momentum.");
 
-        // 3. Ensure Loading Animation is stopped
         stopLoadingAnimation();
     }
 
-    // 2. Data Processing
-    // Weekly: 7 entries, Mon..Sun
+    // Chart Logic: Bins tasks into Mon-Sun counts for the current week
     private int[] getWeeklyTaskCounts(List<Tasks> tasksList) {
 
         int[] counts = new int[7];
 
         Calendar cal = Calendar.getInstance();
+        cal.setFirstDayOfWeek(Calendar.SUNDAY);
+
         int currentWeek = cal.get(Calendar.WEEK_OF_YEAR);
         int currentYear = cal.get(Calendar.YEAR);
 
         Calendar taskCal = Calendar.getInstance();
+        taskCal.setFirstDayOfWeek(Calendar.SUNDAY);
 
         for (Tasks task : tasksList) {
             if (task == null) continue;
@@ -260,12 +255,15 @@ public class InsightFragment extends Fragment {
             int taskWeek = taskCal.get(Calendar.WEEK_OF_YEAR);
             int taskYear = taskCal.get(Calendar.YEAR);
 
-            // ONLY COUNT TASKS FROM CURRENT WEEK
+            // Only count current week
             if (taskYear != currentYear || taskWeek != currentWeek)
                 continue;
 
-            int day = taskCal.get(Calendar.DAY_OF_WEEK); // Sun=1, Mon=2..
-            int index = (day == Calendar.SUNDAY) ? 6 : day - 2;
+            int day = taskCal.get(Calendar.DAY_OF_WEEK);
+            // Calendar.SUNDAY = 1, MONDAY = 2, ... SATURDAY = 7
+
+            // But here Sunday = 0, Monday = 1, ... Saturday = 6
+            int index = day - 1;
 
             if (index >= 0 && index < 7) {
                 counts[index]++;
@@ -276,8 +274,7 @@ public class InsightFragment extends Fragment {
     }
 
 
-    // Monthly: group into 4 buckets (W1,W2,W3,W4) of current month
-    // This keeps the chart simple & fits the 4 columns and the y-axis (0..50)
+    // Chart Logic: Bins tasks into Week 1-4 for the current month
     private int[] getMonthlyCounts(List<Tasks> tasksList) {
         int[] counts = new int[4]; // Week1..Week4
         Calendar cal = Calendar.getInstance();
@@ -295,40 +292,30 @@ public class InsightFragment extends Fragment {
             cal.setTime(comp);
             int y = cal.get(Calendar.YEAR);
             int m = cal.get(Calendar.MONTH);
-            if (y != curYear || m != curMonth) continue; // only current month
+            if (y != curYear || m != curMonth) continue; // Only current month
 
-            int dayOfMonth = cal.get(Calendar.DAY_OF_MONTH); // 1..31
-            int weekIndex = (dayOfMonth - 1) / 7; // 0->days1-7, 1->8-14, 2->15-21, 3->22+
+            int dayOfMonth = cal.get(Calendar.DAY_OF_MONTH);
+            int weekIndex = (dayOfMonth - 1) / 7;
             if (weekIndex < 0) weekIndex = 0;
             if (weekIndex > 3) weekIndex = 3;
             counts[weekIndex]++;
         }
-
         return counts;
     }
 
 
-    // 3. Render Helper Function
+    // UI Rendering: Draws the Weekly Bar Chart
     private void renderWeeklyChart(int[] weeklyCounts) {
         if (weeklyCounts == null || weeklyCounts.length != 7) {
             showEmptyWeeklyChart();
             return;
         }
 
+        // Check for empty data
         boolean noData = true;
-        for (int v : weeklyCounts)
-            if (v > 0) {
-                noData = false;
-                break;
-            }
+        for (int v : weeklyCounts) if (v > 0) { noData = false; break; }
+        if (noData) { showEmptyWeeklyChart(); return; }
 
-        if (noData) {
-            // Clean empty state (no ugly zeros)
-            showEmptyWeeklyChart();
-            return;
-        }
-
-        // Build entries
         List<BarEntry> entries = new ArrayList<>();
         for (int i = 0; i < 7; i++) {
             entries.add(new BarEntry(i, weeklyCounts[i]));
@@ -339,15 +326,10 @@ public class InsightFragment extends Fragment {
         dataSet.setValueTextColor(Color.WHITE);
         dataSet.setValueTextSize(10f);
 
-        // Integer value formatter (no decimals)
+        // Remove decimal points from bar labels
         dataSet.setValueFormatter(new ValueFormatter() {
-            @Override
-            public String getFormattedValue(float value) {
-                return String.valueOf((int) value);
-            }
+            @Override public String getFormattedValue(float value) { return String.valueOf((int) value); }
         });
-
-        // draw values above bars
         dataSet.setDrawValues(true);
 
         BarData barData = new BarData(dataSet);
@@ -355,14 +337,15 @@ public class InsightFragment extends Fragment {
 
         barChart.setData(barData);
 
-        // X axis labels Mon..Sun
-        String[] days = {"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"};
+        // Styling
+        String[] days = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
         configureChartAppearanceForWeekly(days);
 
         barChart.invalidate();
         barChart.animateY(800);
     }
 
+    // UI Rendering: Draws the Monthly Bar Chart
     private void renderMonthlyChart(int[] monthlyCounts) {
         if (monthlyCounts == null || monthlyCounts.length != 4) {
             showEmptyMonthlyChart();
@@ -370,16 +353,8 @@ public class InsightFragment extends Fragment {
         }
 
         boolean noData = true;
-        for (int v : monthlyCounts)
-            if (v > 0) {
-                noData = false;
-                break;
-            }
-
-        if (noData) {
-            showEmptyMonthlyChart();
-            return;
-        }
+        for (int v : monthlyCounts) if (v > 0) { noData = false; break; }
+        if (noData) { showEmptyMonthlyChart(); return; }
 
         List<BarEntry> entries = new ArrayList<>();
         for (int i = 0; i < 4; i++) {
@@ -392,12 +367,8 @@ public class InsightFragment extends Fragment {
         dataSet.setValueTextSize(10f);
 
         dataSet.setValueFormatter(new ValueFormatter() {
-            @Override
-            public String getFormattedValue(float value) {
-                return String.valueOf((int) value);
-            }
+            @Override public String getFormattedValue(float value) { return String.valueOf((int) value); }
         });
-
         dataSet.setDrawValues(true);
 
         BarData barData = new BarData(dataSet);
@@ -405,7 +376,6 @@ public class InsightFragment extends Fragment {
 
         barChart.setData(barData);
 
-        // X axis labels W1..W4
         String[] weeks = {"Week 1", "Week 2", "Week 3", "Week 4"};
         configureChartAppearanceForMonthly(weeks);
 
@@ -414,8 +384,7 @@ public class InsightFragment extends Fragment {
     }
 
 
-    // 4. Chart Appearance Config
-
+    // Chart Styling Configuration (Weekly)
     private void configureChartAppearanceForWeekly(String[] labels) {
         int gray = ContextCompat.getColor(requireContext(), R.color.light_gray);
 
@@ -432,13 +401,12 @@ public class InsightFragment extends Fragment {
         yAxis.setTextColor(gray);
         yAxis.setAxisMinimum(0f);
         yAxis.setAxisMaximum(25f);
-        yAxis.setLabelCount(6, true); // 0,5,10,15,20,25
+        yAxis.setLabelCount(6, true);
         yAxis.setGranularity(5f);
         yAxis.setDrawLabels(true);
 
         barChart.getAxisRight().setEnabled(false);
 
-        // Legend gap and offsets
         Legend legend = barChart.getLegend();
         legend.setEnabled(true);
         legend.setTextColor(gray);
@@ -446,13 +414,13 @@ public class InsightFragment extends Fragment {
         legend.setHorizontalAlignment(Legend.LegendHorizontalAlignment.CENTER);
         legend.setYOffset(12f);
 
-        // Provide space between chart and legend
         barChart.setExtraBottomOffset(16f);
         barChart.getDescription().setEnabled(false);
         barChart.setScaleEnabled(false);
         barChart.setDoubleTapToZoomEnabled(false);
     }
 
+    // Chart Styling Configuration (Monthly)
     private void configureChartAppearanceForMonthly(String[] labels) {
         int gray = ContextCompat.getColor(requireContext(), R.color.light_gray);
 
@@ -469,7 +437,7 @@ public class InsightFragment extends Fragment {
         yAxis.setTextColor(gray);
         yAxis.setAxisMinimum(0f);
         yAxis.setAxisMaximum(50f);
-        yAxis.setLabelCount(6, true); // 0,10,20,30,40,50
+        yAxis.setLabelCount(6, true);
         yAxis.setGranularity(10f);
         yAxis.setDrawLabels(true);
 
@@ -490,7 +458,7 @@ public class InsightFragment extends Fragment {
     }
 
 
-    // 5. Empty State (still remaining)
+    // Helper: Draws an empty chart (flat line) to avoid UI glitches
     private void showEmptyWeeklyChart() {
         if (barChart == null || getContext() == null) return;
 
@@ -532,8 +500,7 @@ public class InsightFragment extends Fragment {
     }
 
 
-    // 6. Dropdown Setup
-
+    // Setup Dropdown (Week vs Month)
     private void setupDropdown() {
         String[] options = {MODE_WEEKLY, MODE_MONTHLY};
         ArrayAdapter<String> adapter = new ArrayAdapter<>(
@@ -546,16 +513,15 @@ public class InsightFragment extends Fragment {
 
         trendDropdown.setOnItemClickListener((parent, view, position, id) -> {
             String selected = (String) parent.getItemAtPosition(position);
-            // reload / re-render according to mode
+            // Reload render logic based on selection
             loadInsightDataAndRender(selected);
-            // re-enable legend when data appears (render methods enable legend)
             barChart.getAxisLeft().setDrawLabels(true);
             barChart.getLegend().setEnabled(true);
         });
     }
 
 
-
+    // Count tasks completed in Current Month
     public int getMonthlyCompleted(List<Tasks> tasksList) {
         int count = 0;
 
@@ -568,16 +534,14 @@ public class InsightFragment extends Fragment {
                 count++;
             }
         }
-
         return count;
     }
 
+    // Updates all the text counters on the screen
     private void updateCounters(List<Tasks> tasksList) {
-        // monthly completed & missed
         int monthlyCompleted = getMonthlyCompleted(tasksList);
         int monthlyMissed = getMonthlyMissed(tasksList);
 
-        // streaks (calculated from all completed dates)
         int currentStreak = countCurrentStreak(tasksList);
         int longest = countLongestStreak(tasksList);
 
@@ -598,6 +562,8 @@ public class InsightFragment extends Fragment {
         totalCompletedTv.setText(String.valueOf(monthlyCompleted));
         totalMissedTv.setText(String.valueOf(monthlyMissed));
     }
+
+    // Count tasks missed in Current Month
     public int getMonthlyMissed(List<Tasks> tasksList) {
         if (tasksList == null) return 0;
         int count = 0;
@@ -616,6 +582,8 @@ public class InsightFragment extends Fragment {
         }
         return count;
     }
+
+    // Build a map of Dates -> Task Count for streak calculation
     private Map<String, Integer> buildCompletionMap(List<Tasks> tasksList) {
         Map<String, Integer> map = new HashMap<>();
         if (tasksList == null) return map;
@@ -634,6 +602,8 @@ public class InsightFragment extends Fragment {
         }
         return map;
     }
+
+    // Calculate Current Streak (Consecutive days backwards from today)
     public int countCurrentStreak(List<Tasks> tasksList) {
         Map<String, Integer> map = buildCompletionMap(tasksList);
         if (map.isEmpty()) return 0;
@@ -653,6 +623,8 @@ public class InsightFragment extends Fragment {
         }
         return streak;
     }
+
+    // Calculate Longest Streak
     public int countLongestStreak(List<Tasks> tasksList) {
         Map<String, Integer> map = buildCompletionMap(tasksList);
         if (map.isEmpty()) return 0;
@@ -668,7 +640,6 @@ public class InsightFragment extends Fragment {
         }
 
         if (dates.isEmpty()) return 0;
-
         Collections.sort(dates);
 
         int longest = 1;
@@ -685,21 +656,18 @@ public class InsightFragment extends Fragment {
                 current = 1;
             }
         }
-
         return longest;
     }
 
 
     private boolean isInCurrentMonth(Date date) {
-            if (date == null) return false;
-
-            Calendar now = Calendar.getInstance();
-            Calendar cal = Calendar.getInstance();
-            cal.setTime(date);
-
-            return now.get(Calendar.YEAR) == cal.get(Calendar.YEAR) &&
-                    now.get(Calendar.MONTH) == cal.get(Calendar.MONTH);
-        }
+        if (date == null) return false;
+        Calendar now = Calendar.getInstance();
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        return now.get(Calendar.YEAR) == cal.get(Calendar.YEAR) &&
+                now.get(Calendar.MONTH) == cal.get(Calendar.MONTH);
+    }
 
     private Date stripTime(Date date) {
         Calendar c = Calendar.getInstance();
@@ -710,26 +678,26 @@ public class InsightFragment extends Fragment {
         c.set(Calendar.MILLISECOND, 0);
         return c.getTime();
     }
+
+    // AI Prep: Converts raw data into JSON for the Gemini Prompt
     private String buildWeeklyJson(List<Tasks> tasksList, String joinDateString , Map<String, Object> stats) {
         try {
             int[] weekly = getWeeklyTaskCounts(tasksList);
-
             int totalCompleted = getMonthlyCompleted(tasksList);
             int totalMissed = getMonthlyMissed(tasksList);
-
             int current = countCurrentStreak(tasksList);
             int longest = countLongestStreak(tasksList);
 
             JSONObject root = new JSONObject();
             JSONObject week = new JSONObject();
 
-            week.put("mon", weekly[0]);
-            week.put("tue", weekly[1]);
-            week.put("wed", weekly[2]);
-            week.put("thu", weekly[3]);
-            week.put("fri", weekly[4]);
-            week.put("sat", weekly[5]);
-            week.put("sun", weekly[6]);
+            week.put("sun", weekly[0]);
+            week.put("mon", weekly[1]);
+            week.put("tue", weekly[2]);
+            week.put("wed", weekly[3]);
+            week.put("thu", weekly[4]);
+            week.put("fri", weekly[5]);
+            week.put("sat", weekly[6]);
 
             week.put("total_completed", totalCompleted);
             week.put("total_missed", totalMissed);
@@ -749,7 +717,6 @@ public class InsightFragment extends Fragment {
                 week.put("previous_week_missed", stats.getOrDefault("previousWeekMissed", 0));
             }
 
-
             return root.toString(2);
 
         } catch (Exception e) {
@@ -757,7 +724,7 @@ public class InsightFragment extends Fragment {
         }
     }
 
-
+    // AI Response: Updates UI with Gemini text
     private void applyAiOutput(String json) {
         try {
             JSONObject obj = new JSONObject(json);
@@ -781,6 +748,7 @@ public class InsightFragment extends Fragment {
         }
     }
 
+    // Save AI results to SharedPrefs to reduce API calls
     private void saveInsightsToCache(String json) {
         SharedPreferences prefs = requireContext()
                 .getSharedPreferences("ai_insights_cache", Context.MODE_PRIVATE);
@@ -793,11 +761,6 @@ public class InsightFragment extends Fragment {
         return prefs.getString("insights_json", null);
     }
 
-    private void clearCache() {
-        SharedPreferences prefs = requireContext()
-                .getSharedPreferences("ai_insights_cache", Context.MODE_PRIVATE);
-        prefs.edit().remove("insights_json").apply();
-    }
 
     private void saveWeeklyJson(String json) {
         SharedPreferences prefs = requireContext()
@@ -810,6 +773,8 @@ public class InsightFragment extends Fragment {
                 .getSharedPreferences("ai_insights_cache", Context.MODE_PRIVATE);
         return prefs.getString("last_weekly_json", null);
     }
+
+    // Loading Animation (Fade In/Out)
     private void setLoadingState() {
         scoreText.setText("...");
         tipText.setText("Loading...");
@@ -837,6 +802,8 @@ public class InsightFragment extends Fragment {
         summaryText.clearAnimation();
         weeklyTip.clearAnimation();
     }
+
+    // Resets the chart when a new week begins
     private void handleWeeklyRollover(List<Tasks> tasksList) {
 
         int thisWeek = getWeekNumber(new Date());
@@ -849,14 +816,10 @@ public class InsightFragment extends Fragment {
 
         // WEEK CHANGED → reset the weekly chart
         if (thisWeek != lastSavedWeek) {
-
-            // reset chart by clearing weekly counts
             currentWeekCompleted = 0;
             currentWeekMissed = 0;
-
             lastSavedWeek = thisWeek;
-
-            // force refresh of weekly chart
+            // Force refresh of weekly chart
             renderWeeklyChart(new int[]{0,0,0,0,0,0,0});
             return;
         }
@@ -868,7 +831,7 @@ public class InsightFragment extends Fragment {
         return c.get(Calendar.WEEK_OF_YEAR);
     }
 
-
+    // Helper to count tasks for a specific week (Current or Previous)
     private int countWeeklyCompleted(List<Tasks> tasksList, boolean previousWeek) {
         Calendar cal = Calendar.getInstance();
         int thisWeek = cal.get(Calendar.WEEK_OF_YEAR);
@@ -876,7 +839,7 @@ public class InsightFragment extends Fragment {
 
         int targetWeek = previousWeek ? thisWeek - 1 : thisWeek;
 
-        // Handle year rollover when thisWeek == 1 and previous week is last week of last year
+        // Handle year rollover
         if (targetWeek == 0) {
             cal.add(Calendar.YEAR, -1);
             targetWeek = cal.getActualMaximum(Calendar.WEEK_OF_YEAR);
@@ -901,9 +864,10 @@ public class InsightFragment extends Fragment {
                 count++;
             }
         }
-
         return count;
     }
+
+    // Helper to count missed tasks for a specific week
     private int countWeeklyMissed(List<Tasks> tasksList, boolean previousWeek) {
         Calendar cal = Calendar.getInstance();
         int thisWeek = cal.get(Calendar.WEEK_OF_YEAR);
@@ -939,15 +903,12 @@ public class InsightFragment extends Fragment {
                 count++;
             }
         }
-
         return count;
     }
-
 
 
     public interface AiCallback {
         void onResult(String output);
         void onError(String error);
     }
-
 }
