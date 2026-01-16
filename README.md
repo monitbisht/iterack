@@ -25,22 +25,22 @@ The project is inspired by concepts from **Personal Informatics systems**, where
 
 ## Visuals
 
-|                **1. Get Started**                |             **2. Secure Login**             |
-|:------------------------------------------------:|:-------------------------------------------:|
-| <img src="Screenshots/onboarding" width="250" /> | <img src="Screenshots/login" width="250" /> |
-|               *Smooth Onboarding*                |           *Authentication Screen*           |
+|                  **1. Get Started**                  |             **2. Secure Login**              |
+|:----------------------------------------------------:|:--------------------------------------------:|
+| <img src="Screenshots/onboarding.png" width="250" /> | <img src="Screenshots/login.png" width="250" /> |
+|                 *Smooth Onboarding*                  |           *Authentication Screen*            |
 
-|              **3. Dashboard**              |                **4. Planner**                 |
-|:------------------------------------------:|:---------------------------------------------:|
-| <img src="Screenshots/home" width="250" /> | <img src="Screenshots/planner" width="250" /> |
-|              *Task Overview*               |        *Structured Task Planning View*        |
+|              **3. Dashboard**               |                 **4. Planner**                 |
+|:-------------------------------------------:|:----------------------------------------------:|
+| <img src="Screenshots/home.png" width="250" /> | <img src="Screenshots/planner.png" width="250" /> |
+|               *Task Overview*               |        *Structured Task Planning View*         |
 
-|                **5. AI Insights**                |                **6. Settings**                |
-|:------------------------------------------------:|:---------------------------------------------:|
-| <img src="Screenshots/insight(1)" width="250" /> | <img src="Screenshots/profile" width="250" /> |
-|               *AI-Based Analysis*                |             *Custom Preferences*              |
+|                **5. AI Insights**                 |                **6. Settings**                 |
+|:-------------------------------------------------:|:----------------------------------------------:|
+| <img src="Screenshots/insight(1).png" width="250" /> | <img src="Screenshots/profile.png" width="250" /> |
+|                *AI-Based Analysis*                |              *Custom Preferences*              |
 
-All application screenshots and UI previews can be found in the `Screenshots/` folder of this repository.
+All application screenshots and UI previews can be found in the [Screenshots](Screenshots/) folder of this repository.
 
 
 ## Key Features
@@ -64,7 +64,7 @@ To run this project locally, you will need **Android Studio**.
 
 1.  **Clone the repository**
     ```bash
-    git clone [https://github.com/monitbisht/iterack.git](https://github.com/monitbisht/iterack.git)
+    git clone https://github.com/monitbisht/iterack.git
     ```
 2.  **Open in Android Studio**
     * Go to `File` -> `Open` -> Select the `Iterack` folder.
