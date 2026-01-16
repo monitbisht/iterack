@@ -1,8 +1,6 @@
 # Iterack
 
-<p align="center">
   <img src="Screenshots/iterack_logo.png" alt="Iterack Logo" width="160" />
-</p>
 
 ![Platform](https://img.shields.io/badge/Platform-Android-3DDC84?logo=android&logoColor=white)
 ![Language](https://img.shields.io/badge/Language-Java-007396?logo=java&logoColor=white)
