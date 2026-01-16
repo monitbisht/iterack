@@ -1,6 +1,6 @@
 # Iterack
 
-![Iterack Logo](screenshots/iterack_logo.png)
+![Iterack Logo](Screenshots/iterack_logo.png)
 
 ![Platform](https://img.shields.io/badge/Platform-Android-3DDC84?logo=android&logoColor=white)
 ![Language](https://img.shields.io/badge/Language-Java-007396?logo=java&logoColor=white)
@@ -25,20 +25,23 @@ The project is inspired by concepts from **Personal Informatics systems**, where
 
 ## Visuals
 
-| **1. Get Started** | **2. Secure Login** |
-|:---:|:---:|
-| <img src="screenshots/onboarding.png" width="250" /> | <img src="screenshots/login.png" width="250" /> |
-| *Smooth Onboarding* | *Authentication Screen* |
+|                **1. Get Started**                |             **2. Secure Login**             |
+|:------------------------------------------------:|:-------------------------------------------:|
+| <img src="Screenshots/onboarding" width="250" /> | <img src="Screenshots/login" width="250" /> |
+|               *Smooth Onboarding*                |           *Authentication Screen*           |
 
-| **3. Dashboard** | **4. Planner** |
-|:---:|:---:|
-| <img src="screenshots/dashboard.png" width="250" /> | <img src="screenshots/planner.png" width="250" /> |
-| *Task Overview* | *Structured Task Planning View* |
+|              **3. Dashboard**              |                **4. Planner**                 |
+|:------------------------------------------:|:---------------------------------------------:|
+| <img src="Screenshots/home" width="250" /> | <img src="Screenshots/planner" width="250" /> |
+|              *Task Overview*               |        *Structured Task Planning View*        |
 
-| **5. AI Insights** | **6. Settings** |
-|:---:|:---:|
-| <img src="screenshots/insights.png" width="250" /> | <img src="screenshots/settings.png" width="250" /> |
-| *AI-Based Analysis* | *Custom Preferences* |
+|                **5. AI Insights**                |                **6. Settings**                |
+|:------------------------------------------------:|:---------------------------------------------:|
+| <img src="Screenshots/insight(1)" width="250" /> | <img src="Screenshots/profile" width="250" /> |
+|               *AI-Based Analysis*                |             *Custom Preferences*              |
+
+All application screenshots and UI previews can be found in the `Screenshots/` folder of this repository.
+
 
 ## Key Features
 * **Smart Dashboard:** Real-time overview of daily progress and task groups (Work, Personal, Health, Study).
@@ -90,7 +93,8 @@ The core functionality is complete and stable. Further improvements and feature 
 Created by **Monit Bisht** - Aspiring Android Developer.
 
 * [GitHub Profile](https://github.com/monitbisht)
-* [Email](monitbisht15@gmail.com)
+* [Email](mailto:monitbisht15@gmail.com)
+
 
 
 ## Acknowledgements
