@@ -1,6 +1,8 @@
 # Iterack
 
-![Iterack Logo](Screenshots/iterack_logo.png)
+<p align="center">
+  <img src="Screenshots/iterack_logo.png" alt="Iterack Logo" width="120" />
+</p>
 
 ![Platform](https://img.shields.io/badge/Platform-Android-3DDC84?logo=android&logoColor=white)
 ![Language](https://img.shields.io/badge/Language-Java-007396?logo=java&logoColor=white)
@@ -93,7 +95,10 @@ The core functionality is complete and stable. Further improvements and feature 
 Created by **Monit Bisht** - Aspiring Android Developer.
 
 * [GitHub Profile](https://github.com/monitbisht)
-* [Email](mailto:monitbisht15@gmail.com)
+* **Email:** monitbisht15@gmail.com
+
+* Although development is currently paused, contributions and improvement suggestions are welcome. Please reach out via email for collaboration.
+
 
 
 
